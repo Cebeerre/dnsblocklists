@@ -1,0 +1,16 @@
+# Title: Blocklist for whatsapp
+# Description: Blocks whatsapp content
+# Homepage: https://github.com/Cebeerre/dnsblocklists# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE# Version: 202502281057
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.wa.me
+*.whatsapp-plus.info
+*.whatsapp-plus.me
+*.whatsapp-plus.net
+*.whatsapp.cc
+*.whatsapp.com
+*.whatsapp.info
+*.whatsapp.net
+*.whatsapp.org
+*.whatsapp.tv
+*.whatsappbrand.com

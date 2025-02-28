@@ -1,0 +1,37 @@
+# Title: Blocklist for tiktok
+# Description: Blocks tiktok content
+# Homepage: https://github.com/Cebeerre/dnsblocklists# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE# Version: 202502281057
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.p16-tiktokcdn-com.akamaized.net
+*.amemv.com
+*.bdurl.com
+*.bytecdn.cn
+*.bytedance.map.fastly.net
+*.bytedapm.com
+*.bytegoofy.com
+*.byteimg.com
+*.byteoversea.com
+*.bytescm.com
+*.douyin.com
+*.douyincdn.com
+*.douyinpic.com
+*.douyinliving.com
+*.douyinstatic.com
+*.douyinvod.com
+*.huoshan.com
+*.huoshanstatic.com
+*.huoshanzhibo.com
+*.muscdn.com
+*.musical.ly
+*.pstatp.com
+*.snssdk.com
+*.tiktok.com
+*.tiktokcdn.com
+*.tiktokv.com
+*.tiktokcdn-us.com
+*.ttlivecdn.com.c.bytefcdn-oversea.com
+*.ttlivecdn.com
+*.p16-tiktok-*.ibyteimg.com
+*.v*.tiktokcdn-eu.com
+*.zijieapi.com

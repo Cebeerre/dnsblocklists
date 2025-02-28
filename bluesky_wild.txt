@@ -1,0 +1,7 @@
+# Title: Blocklist for bluesky
+# Description: Blocks bluesky content
+# Homepage: https://github.com/Cebeerre/dnsblocklists# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE# Version: 202502281057
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.bsky.app
+*.bsky.social

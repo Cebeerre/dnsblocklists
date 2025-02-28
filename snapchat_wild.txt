@@ -1,0 +1,11 @@
+# Title: Blocklist for snapchat
+# Description: Blocks snapchat content
+# Homepage: https://github.com/Cebeerre/dnsblocklists# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE# Version: 202502281057
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.snapchat.com
+*.sc-cdn.net
+*.snap-dev.net
+*.snapkit.co
+*.snapads.com
+*.impala-media-production.s3.amazonaws.com

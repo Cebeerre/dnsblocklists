@@ -1,0 +1,10 @@
+# Title: Blocklist for reddit
+# Description: Blocks reddit content
+# Homepage: https://github.com/Cebeerre/dnsblocklists# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE# Version: 202502281057
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.reddit.com
+*.redditstatic.com
+*.redditmail.com
+*.redditmedia.com
+*.redd.it
