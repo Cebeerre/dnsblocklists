@@ -1,6 +1,8 @@
 # Title: Blocklist for tiktok
 # Description: Blocks tiktok content
-# Homepage: https://github.com/Cebeerre/dnsblocklists# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE# Version: 202502281057
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202502281059
 # Syntax: Domains Wildcard - Blocky (v0.23 or newer)
 #
 *.p16-tiktokcdn-com.akamaized.net
