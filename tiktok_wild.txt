@@ -34,6 +34,5 @@
 *.tiktokcdn-us.com
 *.ttlivecdn.com.c.bytefcdn-oversea.com
 *.ttlivecdn.com
-*.p16-tiktok-*.ibyteimg.com
-*.v*.tiktokcdn-eu.com
+*.tiktokcdn-eu.com
 *.zijieapi.com
