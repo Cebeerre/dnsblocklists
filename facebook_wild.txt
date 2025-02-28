@@ -447,4 +447,4 @@
 *.yogalayout.com
 *.zuckerberg.com
 *.zuckerberg.net
-|fbcdn-a.akamaihd.net
+*.fbcdn-a.akamaihd.net
