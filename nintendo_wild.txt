@@ -1,0 +1,21 @@
+# Title: Blocklist for Nintendo
+# Description: Blocks Nintendo content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509101814
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.nintendo.be
+*.nintendo.com
+*.nintendo.de
+*.nintendo.es
+*.nintendo.eu
+*.nintendo-europe.com
+*.nintendo.fr
+*.nintendo.it
+*.nintendo.jp
+*.nintendo.net
+*.nintendo.nl
+*.nintendo.pt
+*.nintendoswitch.cn
+*.nintendowifi.net

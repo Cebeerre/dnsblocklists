@@ -1,0 +1,36 @@
+# Title: Blocklist for Cloudflare
+# Description: Blocks Cloudflare content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509101814
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.argotunnel.com
+*.cf-ipfs.com
+*.cloudflare-dns.com
+*.cloudflare-ipfs.com
+*.cloudflare-quic.com
+*.cloudflare.com
+*.cloudflare.net
+*.cloudflare.tv
+*.cloudflareaccess.com
+*.cloudflareapps.com
+*.cloudflarebolt.com
+*.cloudflareclient.com
+*.cloudflareinsights.com
+*.cloudflareok.com
+*.cloudflarepreview.com
+*.cloudflareresolve.com
+*.cloudflaressl.com
+*.cloudflarestatus.com
+*.cloudflarestorage.com
+*.cloudflarestream.com
+*.cloudflaretest.com
+*.cloudflarewarp.com
+*.every1dns.net
+*.pacloudflare.com
+*.pages.dev
+*.trycloudflare.com
+*.videodelivery.net
+*.warp.plus
+*.workers.dev

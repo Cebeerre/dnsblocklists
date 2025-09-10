@@ -1,9 +1,12 @@
-# Title: Blocklist for Bluesky
-# Description: Blocks Bluesky content
+# Title: Blocklist for Disney+
+# Description: Blocks Disney+ content
 # Homepage: https://github.com/Cebeerre/dnsblocklists
 # License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
 # Version: 202509101814
 # Syntax: Domains Wildcard - Blocky (v0.23 or newer)
 #
-*.bsky.app
-*.bsky.social
+*.disney-plus.net
+*.disneyplus.com
+*.disneynow.com
+*.hotstar.com
+*.starplus.com

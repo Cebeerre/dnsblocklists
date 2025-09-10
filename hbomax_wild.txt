@@ -1,0 +1,18 @@
+# Title: Blocklist for HBO Max
+# Description: Blocks HBO Max content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509101814
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.hbo.com
+*.hbogo.com
+*.hbogo.eu
+*.hbogoasia.com
+*.hbogoasia.id
+*.hbogoasia.ph
+*.hbomax.com
+*.hbomaxcdn.com
+*.hbonow.com
+*.maxgo.com
+*.max.com

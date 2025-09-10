@@ -1,0 +1,23 @@
+# Title: Blocklist for LINE
+# Description: Blocks LINE content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509101814
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.gcld-line.com
+*.lin.ee
+*.line-apps-beta.com
+*.line-apps-rc.com
+*.line-apps.com
+*.line-cdn.net
+*.line-scdn.net
+*.line.biz
+*.line.me
+*.linecorp.com
+*.linefriends.com
+*.linegame.jp
+*.linemobile.com
+*.linemyshop.com
+*.lineshoppingseller.com
+*.linetv.tw

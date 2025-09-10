@@ -1,0 +1,19 @@
+# Title: Blocklist for Betway
+# Description: Blocks Betway content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509101814
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.betway.com
+*.betway.de
+*.betwaygroup.com
+*.betway.it
+*.betway.se
+*.betway.be
+*.betway.es
+*.vietnambetway88.com
+*.betwaysatta.com
+*.betway.mx
+*.betway.pl
+*.betway.fr

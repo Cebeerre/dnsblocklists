@@ -1,9 +1,10 @@
-# Title: Blocklist for Bluesky
-# Description: Blocks Bluesky content
+# Title: Blocklist for Mail.ru
+# Description: Blocks Mail.ru content
 # Homepage: https://github.com/Cebeerre/dnsblocklists
 # License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
 # Version: 202509101814
 # Syntax: Domains Wildcard - Blocky (v0.23 or newer)
 #
-*.bsky.app
-*.bsky.social
+*.imgsmail.ru
+*.mail.ru
+*.mycdn.me
