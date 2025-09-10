@@ -1,0 +1,19 @@
+# Title: Blocklist for Roblox
+# Description: Blocks Roblox content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509101814
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.blox.com
+*.rbx.com
+*.rbx.cn
+*.rbxcdn.com
+*.rbxcdn.net
+*.rbxinfra.com
+*.rbxinfra.net
+*.roblox.cn
+*.roblox.com
+*.robloxcdn.com
+*.robloxdev.cn
+*.rbxadder.com

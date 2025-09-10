@@ -1,8 +1,8 @@
-# Title: Blocklist for twitter
-# Description: Blocks twitter content
+# Title: Blocklist for X (formerly Twitter)
+# Description: Blocks X (formerly Twitter) content
 # Homepage: https://github.com/Cebeerre/dnsblocklists
 # License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
-# Version: 202502281122
+# Version: 202509101814
 # Syntax: Domains Wildcard - Blocky (v0.23 or newer)
 #
 *.ads-twitter.com

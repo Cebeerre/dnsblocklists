@@ -1,13 +1,12 @@
-# Title: Blocklist for Twitch
-# Description: Blocks Twitch content
+# Title: Blocklist for Riot Games
+# Description: Blocks Riot Games content
 # Homepage: https://github.com/Cebeerre/dnsblocklists
 # License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
 # Version: 202509101814
 # Syntax: Domains Wildcard - Blocky (v0.23 or newer)
 #
-*.ext-twitch.tv
-*.jtvnw.net
-*.ttvnw.net
-*.twitch.tv
-*.twitchcdn.net
-*.twitchsvc.net
+*.pvp.net
+*.rgpub.io
+*.riotcdn.com
+*.riotcdn.net
+*.riotgames.com

@@ -1,0 +1,20 @@
+# Title: Blocklist for Spotify
+# Description: Blocks Spotify content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509101814
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.byspotify.com
+*.pscdn.co
+*.scdn.co
+*.spoti.fi
+*.spotify-everywhere.com
+*.spotify.com
+*.spotify.design
+*.spotifycdn.com
+*.spotifycdn.net
+*.spotifycharts.com
+*.spotifycodes.com
+*.spotifyforbrands.com
+*.spotifyjobs.com

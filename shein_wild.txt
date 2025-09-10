@@ -1,13 +1,9 @@
-# Title: Blocklist for Twitch
-# Description: Blocks Twitch content
+# Title: Blocklist for Shein
+# Description: Blocks Shein content
 # Homepage: https://github.com/Cebeerre/dnsblocklists
 # License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
 # Version: 202509101814
 # Syntax: Domains Wildcard - Blocky (v0.23 or newer)
 #
-*.ext-twitch.tv
-*.jtvnw.net
-*.ttvnw.net
-*.twitch.tv
-*.twitchcdn.net
-*.twitchsvc.net
+*.shein.com
+*.shein.se

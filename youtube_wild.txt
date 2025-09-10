@@ -2,7 +2,7 @@
 # Description: Blocks YouTube content
 # Homepage: https://github.com/Cebeerre/dnsblocklists
 # License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
-# Version: 202505271109
+# Version: 202509101814
 # Syntax: Domains Wildcard - Blocky (v0.23 or newer)
 #
 *.ggpht.cn
