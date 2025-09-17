@@ -24,15 +24,15 @@ jobs:
 
           # nrd7 -> wildcard-only
           curl -fsSL "$SRC7" \
-          | awk 'BEGIN{print "# Generated from Hagezi NRD (7d) -> wildcard-only\n# source: "ENVIRON["SRC7"]"\n"} \
+          | awk 'BEGIN{print "# Generated from Hagezi NRD (7d) -> wildcard-only\n# source: https://github.com/hagezi/dns-blocklists\n"} \
                  /^#/ {next} NF {gsub(/\r/,""); print "*." $0}' \
-          | sort -u > lists/nrd7-wildcard.txt
+          | sort -u > NRD/nrd7-wildcard.txt
 
           # nrd14-8 -> wildcard-only
           curl -fsSL "$SRC14" \
-          | awk 'BEGIN{print "# Generated from Hagezi NRD (14d-8d) -> wildcard-only\n# source: "ENVIRON["SRC14"]"\n"} \
+          | awk 'BEGIN{print "# Generated from Hagezi NRD (14d-8d) -> wildcard-only\n# source: https://github.com/hagezi/dns-blocklists\n"} \
                  /^#/ {next} NF {gsub(/\r/,""); print "*." $0}' \
-          | sort -u > lists/nrd14-8-wildcard.txt
+          | sort -u > NRD/nrd14-8-wildcard.txt
 
       - name: Commit & push if changed
         uses: stefanzweifel/git-auto-commit-action@v5
