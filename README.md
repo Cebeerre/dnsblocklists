@@ -27,3 +27,14 @@ It provides domain blocklists already converted into the **wildcard asterisk (`*
   - `500px_asterisk.txt` → Wildcard blocklist for 500px domains.  
   - …and so on, one for each service in the registry.  
 
+---
+
+## 🔄 How It Works
+
+- GitHub Actions workflows run on a schedule:  
+  - **NRD lists** → refreshed **daily at 07:00 CET/CEST**.  
+  - **Webservices lists** → refreshed **weekly**.  
+- The workflows:  
+  1. Fetch the upstream lists in their original formats.  
+  2. Convert them into `*.domain` wildcard format.  
+  3. Publish them here under `NRD/` or `webservices/`.  
