@@ -1,8 +1,8 @@
-name: Build NRD wildcard for Blocky
+name: Build Hagezi NRD wildcard for Blocky
 
 on:
   schedule:
-    - cron: "15 2 * * *"   # daily
+    - cron: "0 7 * * *"  
   workflow_dispatch: {}
 
 permissions:
@@ -14,28 +14,46 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build NRD wildcard files
+      - name: Build NRD wildcard files (wildcard-only)
         run: |
           set -euo pipefail
-          mkdir -p lists
+          mkdir -p NRD
 
           SRC7="https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/domains/nrd7.txt"
           SRC14="https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/domains/nrd14-8.txt"
+          TS="$(date -u +%Y%m%d%H%M)"
 
           # nrd7 -> wildcard-only
           curl -fsSL "$SRC7" \
-          | awk 'BEGIN{print "# Generated from Hagezi NRD (7d) -> wildcard-only\n# source: https://github.com/hagezi/dns-blocklists\n"} \
+          | awk 'BEGIN{print "# Title: NRD 7 days (wildcard)"; \
+                       print "# Description: Newly Registered Domains (last 7 days)"; \
+                       print "# Homepage: https://github.com/" ENVIRON["GITHUB_REPOSITORY"]; \
+                       print "# License: https://github.com/" ENVIRON["GITHUB_REPOSITORY"] "/blob/main/LICENSE"; \
+                       print "# Version: " ENVIRON["TS"]; \
+                       print "# Original Source: https://github.com/hagezi/dns-blocklists"; \
+                       print "# Syntax: Domains Wildcard - Blocky (v0.23 or newer)\n#"} \
                  /^#/ {next} NF {gsub(/\r/,""); print "*." $0}' \
-          | sort -u > NRD/nrd7-wildcard.txt
+          | sort -u > NRD/nrd7_asterisk.txt
 
           # nrd14-8 -> wildcard-only
           curl -fsSL "$SRC14" \
-          | awk 'BEGIN{print "# Generated from Hagezi NRD (14d-8d) -> wildcard-only\n# source: https://github.com/hagezi/dns-blocklists\n"} \
+          | awk 'BEGIN{print "# Title: NRD 14->8 days (wildcard)"; \
+                       print "# Description: Newly Registered Domains (from day 14 to day 8)"; \
+                       print "# Homepage: https://github.com/" ENVIRON["GITHUB_REPOSITORY"]; \
+                       print "# License: https://github.com/" ENVIRON["GITHUB_REPOSITORY"] "/blob/main/LICENSE"; \
+                       print "# Version: " ENVIRON["TS"]; \
+                       print "# Original Source: https://github.com/hagezi/dns-blocklists"; \
+                       print "# Syntax: Domains Wildcard - Blocky (v0.23 or newer)\n#"} \
                  /^#/ {next} NF {gsub(/\r/,""); print "*." $0}' \
-          | sort -u > NRD/nrd14-8-wildcard.txt
+          | sort -u > NRD/nrd14-8_asterisk.txt
+
+          echo "Preview 7d:"
+          head -n 20 NRD/nrd7_asterisk.txt || true
+          echo "Preview 14-8d:"
+          head -n 20 NRD/nrd14-8_asterisk.txt || true
 
       - name: Commit & push if changed
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore(nrd): update wildcard lists (7d and 14-8d)"
-          file_pattern: "lists/nrd*-wildcard.txt"
+          commit_message: "chore(nrd): refresh wildcard lists (7d, 14-8d)"
+          file_pattern: "NRD/*.txt"
