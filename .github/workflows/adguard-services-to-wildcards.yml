@@ -27,7 +27,7 @@ jobs:
             -o /usr/local/bin/yq
           chmod +x /usr/local/bin/yq
 
-      - name: Fetch index and build per-service wildcard lists
+      - name: Fetch index and build per-service wildcard lists (with skipped notes)
         run: |
           set -euo pipefail
           mkdir -p webservices
@@ -43,30 +43,80 @@ jobs:
 
               SID_RAW="$(yq -r '.id // .name // "unknown"' "$TMP")"
               SNAME="$(yq -r '.name // .id // "unknown"' "$TMP")"
-              # sanitize id -> lowercase, spaces & non-alnum => underscore
               SID="$(echo "$SID_RAW" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/_/g')"
 
               yq -r '.rules // [] | .[]?' "$TMP" > /tmp/rules.txt || true
 
-              awk '
-                BEGIN{FS="^"}
-                /^[[:space:]]*@@/ {next}                      # skip allowlist exceptions
-                /^[[:space:]]*\|\|[^|]/ {
+              DOMOUT="/tmp/${SID}.wild"
+              SKIPOUT="/tmp/${SID}.skip"
+              : > "$DOMOUT"
+              : > "$SKIPOUT"
+
+              awk -v DOMOUT="$DOMOUT" -v SKIPOUT="$SKIPOUT" '
+                function tolower_str(s){ for(i=1;i<=length(s);i++){ c=substr(s,i,1); lc=tolower(c); o=o lc } out=o; o=""; return out }
+                BEGIN{ FS="^" }
+                {
                   gsub(/\r/,"")
                   line=$0
+                }
+                /^[[:space:]]*$/ { next }
+                /^[[:space:]]*#/  { next }
+                /^[[:space:]]*@@/ { next }         # skip exceptions
+
+                # Case 1: Adblock network rule: ||domain^...
+                /^[[:space:]]*\|\|[^|]/ {
                   split(line, parts, /\^/)
                   dom=parts[1]
                   sub(/^[[:space:]]*\|\|/, "", dom)
-                  sub(/[,|$].*$/, "", dom)                     # drop params if any
-                  # must look like a domain
+                  sub(/[,|$].*$/, "", dom)
+                  # reject if contains any wildcard (unsupported for || rules)
+                  if (dom ~ /\*/) {
+                    print "# Skipped unsupported rule: " line >> SKIPOUT
+                    next
+                  }
+                  # sanitize
+                  sub(/^\.+/,"",dom); sub(/\.+$/,"",dom)
                   if (dom ~ /\./ && dom !~ /:\/\//) {
-                    sub(/^\.+/,"",dom); sub(/\.+$/,"",dom)
-                    # lowercase
-                    dom=tolower(dom)
-                    print "*." dom
+                    dom=tolower_str(dom)
+                    print "*." dom >> DOMOUT
+                  }
+                  next
+                }
+
+                # Case 2: Direct domain or wildcard domain
+                {
+                  dom=line
+                  # drop params (rare in direct lines)
+                  sub(/[,|$].*$/, "", dom)
+                  # normalize
+                  sub(/^[[:space:]]+/,"",dom); sub(/[[:space:]]+$/,"",dom)
+                  # If starts with "*.", check if there are more "*" later
+                  if (dom ~ /^\*\./) {
+                    rest=substr(dom,3)
+                    if (rest ~ /\*/) {
+                      print "# Skipped unsupported rule: " line >> SKIPOUT
+                      next
+                    }
+                    sub(/\.+$/,"",dom)
+                    dom=tolower_str(dom)
+                    print dom >> DOMOUT
+                    next
+                  }
+                  # If contains any "*" elsewhere -> unsupported
+                  if (dom ~ /\*/) {
+                    print "# Skipped unsupported rule: " line >> SKIPOUT
+                    next
+                  }
+                  # Plain domain -> convert to *.domain
+                  sub(/^\.+/,"",dom); sub(/\.+$/,"",dom)
+                  if (dom ~ /\./ && dom !~ /:\/\//) {
+                    dom=tolower_str(dom)
+                    print "*." dom >> DOMOUT
                   }
                 }
-              ' /tmp/rules.txt | sort -u > "/tmp/${SID}.wild"
+              ' /tmp/rules.txt
+
+              sort -u -o "$DOMOUT" "$DOMOUT"
 
               OUT="webservices/${SID}_asterisk.txt"
               {
@@ -78,14 +128,20 @@ jobs:
                 echo "# Original Source: ${ORIG_SOURCE}"
                 echo "# Syntax: Domains Wildcard - Blocky (v0.23 or newer)"
                 echo "#"
-                cat "/tmp/${SID}.wild"
+                if [ -s "$SKIPOUT" ]; then
+                  echo "# Skipped unsupported rules:"
+                  cat "$SKIPOUT"
+                  echo "#"
+                fi
+                cat "$DOMOUT"
               } > "$OUT"
 
               echo "Wrote $OUT (lines: $(wc -l < "$OUT"))"
+              rm -f "$DOMOUT" "$SKIPOUT" /tmp/rules.txt "$TMP"
             done
 
       - name: Commit & push if changed
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore(services): refresh wildcard lists from AdGuard registry"
+          commit_message: "chore(services): refresh wildcard lists from AdGuard registry (skip unsupported)"
           file_pattern: "webservices/*.txt"
