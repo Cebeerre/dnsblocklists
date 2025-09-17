@@ -32,7 +32,7 @@ It provides domain blocklists already converted into the **wildcard asterisk (`*
 ## 🔄 How It Works
 
 - GitHub Actions workflows run on a schedule:  
-  - **NRD lists** → refreshed **daily at 07:00 CET/CEST**.  
+  - **NRD lists** → refreshed **daily**.  
   - **Webservices lists** → refreshed **weekly**.  
 - The workflows:  
   1. Fetch the upstream lists in their original formats.  
