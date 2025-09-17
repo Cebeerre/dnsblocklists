@@ -1,0 +1,111 @@
+name: Build AdGuard services -> wildcard lists
+
+on:
+  schedule:
+    - cron: "25 2 * * *"   # daily
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Source directory listing (JSON) for AdGuard Hostlists Registry:
+      SRC_INDEX: https://api.github.com/repos/AdguardTeam/HostlistsRegistry/contents/services?ref=main
+      # Your homepage/license will use the current repo by default:
+      HOMEPAGE: https://github.com/${{ github.repository }}
+      LICENSE_URL: https://github.com/${{ github.repository }}/blob/main/LICENSE
+      ORIG_SOURCE: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq and yq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+          curl -fsSL \
+            https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
+            -o /usr/local/bin/yq
+          chmod +x /usr/local/bin/yq
+          yq --version
+          jq --version
+
+      - name: Fetch index and build per-service wildcard lists
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p lists/services
+
+          TS="$(date -u +%Y%m%d%H%M)"
+          echo "Timestamp: $TS"
+
+          # 1) Fetch directory JSON (auth to avoid low anon rate limits)
+          curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" "$SRC_INDEX" > /tmp/services.json
+
+          # 2) Iterate all files (type=file) and process
+          jq -r '.[] | select(.type=="file") | [.name, .download_url] | @tsv' /tmp/services.json | while IFS=$'\t' read -r NAME DL; do
+            echo "Processing: $NAME"
+
+            TMP="/tmp/svc.yml"
+            curl -fsSL "$DL" -o "$TMP"
+
+            # Extract id/name and rules array (if present)
+            SID="$(yq -r '.id // .name // "unknown"' "$TMP" | tr ' ' '_' | tr '[:upper:]' '[:lower:]')"
+            SNAME="$(yq -r '.name // .id // "unknown"' "$TMP")"
+
+            # Pull rules as plain lines; ignore null
+            yq -r '.rules // [] | .[]?' "$TMP" > /tmp/rules.txt || true
+
+            # Filter Adblock network rules starting with "||" and convert to *.domain
+            # Examples handled:
+            #   ||example.com^
+            #   ||sub.domain.co.uk^$third-party
+            # We take the part between leading "||" and the first "^"
+            awk '
+              BEGIN{FS="^"}
+              /^[[:space:]]*@@/ {next}                      # skip exceptions
+              /^[[:space:]]*\|\|[^|]/ {
+                gsub(/\r/,"")
+                line=$0
+                # strip anything after first caret
+                split(line, parts, /\^/)
+                dom=parts[1]
+                sub(/^[[:space:]]*\|\|/, "", dom)
+                # drop parameters after comma or dollar if caret not used (defensive)
+                sub(/[,|$].*$/, "", dom)
+                # basic sanity: must contain a dot and no scheme
+                if (dom ~ /\./ && dom !~ /:\/\//) {
+                  # strip leading dots and trailing dots
+                  sub(/^\.+/,"",dom); sub(/\.+$/,"",dom)
+                  # lower-case
+                  print "*." tolower(dom)
+                }
+              }
+            ' /tmp/rules.txt | sort -u > "/tmp/${SID}.wild"
+
+            OUT="webservices/${SID}.txt"
+            {
+              echo "# Title: Blocklist for ${SNAME}"
+              echo "# Description: Blocks ${SNAME} content"
+              echo "# Homepage: ${HOMEPAGE}"
+              echo "# License: ${LICENSE_URL}"
+              echo "# Version: ${TS}"
+              echo "# Original Source: ${ORIG_SOURCE}"
+              echo "# Syntax: Domains Wildcard - Blocky (v0.23 or newer)"
+              echo "#"
+              cat "/tmp/${SID}.wild"
+            } > "$OUT"
+
+            # If a service has no matching rules, keep a minimal file (header only)
+            # (Blocky will just skip as there are no entries)
+            echo "Wrote $OUT (lines: $(wc -l < "$OUT"))"
+          done
+
+      - name: Commit & push if changed
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(services): refresh wildcard lists from AdGuard registry"
+          file_pattern: "lists/services/*.txt"
