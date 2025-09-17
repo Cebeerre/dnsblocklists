@@ -1,0 +1,12 @@
+# Title: Blocklist for GOG
+# Description: Blocks GOG content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509172153
+# Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.gog-cdn-lumen.secure2.footprint.net
+*.gog-statics.com
+*.gog.com
+*.gogalaxy.com

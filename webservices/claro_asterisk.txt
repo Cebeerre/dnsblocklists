@@ -1,0 +1,30 @@
+# Title: Blocklist for Claro
+# Description: Blocks Claro content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509172153
+# Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.claro.com
+*.claro.com.ar
+*.claro.com.br
+*.claro.com.co
+*.claro.com.do
+*.claro.com.ec
+*.claro.com.gt
+*.claro.com.hn
+*.claro.com.ni
+*.claro.com.pa
+*.claro.com.pe
+*.claro.com.py
+*.claro.com.sv
+*.claro.com.uy
+*.claro.cr
+*.claro.net.br
+*.claro.net.co
+*.clarochile.cl
+*.claromusica.com
+*.claropr.com
+*.clarovideo.com
+*.usclaro.com

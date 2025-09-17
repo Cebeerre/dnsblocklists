@@ -1,0 +1,14 @@
+# Title: Blocklist for Twitch
+# Description: Blocks Twitch content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509172153
+# Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.ext-twitch.tv
+*.jtvnw.net
+*.ttvnw.net
+*.twitch.tv
+*.twitchcdn.net
+*.twitchsvc.net

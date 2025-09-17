@@ -1,0 +1,18 @@
+# Title: Blocklist for Nvidia
+# Description: Blocks Nvidia content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509172153
+# Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.geforce.com
+*.geforcenow.com
+*.nvidia.cn
+*.nvidia.com
+*.nvidia.com.global.ogslb.com
+*.nvidia.eu
+*.nvidia.partners
+*.nvidiagrid.net
+*.nvidianews.com
+*.tegrazone.com

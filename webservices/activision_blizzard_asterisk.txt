@@ -1,0 +1,14 @@
+# Title: Blocklist for Activision Blizzard
+# Description: Blocks Activision Blizzard content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509172153
+# Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.activision.com
+*.activisionblizzard.com
+*.callofduty.com
+*.callofdutyleague.com
+*.codmwest.com
+*.demonware.net

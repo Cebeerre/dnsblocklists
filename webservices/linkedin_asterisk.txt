@@ -1,0 +1,24 @@
+# Title: Blocklist for LinkedIn
+# Description: Blocks LinkedIn content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509172153
+# Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.bizographics.com
+*.cs1404.wpc.epsiloncdn.net
+*.cs767.wpc.epsiloncdn.net
+*.l-0005.dc-msedge.net
+*.l-0005.l-dc-msedge.net
+*.l-0005.l-msedge.net
+*.l-0015.l-msedge.net
+*.licdn.cn
+*.licdn.com
+*.linkedin.at
+*.linkedin.be
+*.linkedin.cn
+*.linkedin.com
+*.linkedin.nl
+*.linkedin.qtlcdn.com
+*.lnkd.in

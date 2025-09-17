@@ -1,0 +1,24 @@
+# Title: Blocklist for Vimeo
+# Description: Blocks Vimeo content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509172153
+# Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.livestream.com
+*.vhx.tv
+*.vhxqa1.com
+*.vhxqa2.com
+*.vhxqa3.com
+*.vhxqa4.com
+*.vhxqa6.com
+*.vimeo-staging.com
+*.vimeo-staging2.com
+*.vimeo.com
+*.vimeo.fr
+*.vimeobusiness.com
+*.vimeocdn.com
+*.vimeogoods.com
+*.vimeoondemand.com
+*.vimeostatus.com

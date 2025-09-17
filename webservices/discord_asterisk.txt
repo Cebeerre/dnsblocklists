@@ -1,0 +1,34 @@
+# Title: Blocklist for Discord
+# Description: Blocks Discord content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509172153
+# Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.airhorn.solutions
+*.airhornbot.com
+*.bigbeans.solutions
+*.dis.gd
+*.discord-activities.com
+*.discord.co
+*.discord.com
+*.discord.design
+*.discord.dev
+*.discord.gg
+*.discord.gift
+*.discord.gifts
+*.discord.media
+*.discord.new
+*.discord.store
+*.discord.tools
+*.discordactivities.com
+*.discordapp.com
+*.discordapp.io
+*.discordapp.net
+*.discordcdn.com
+*.discordmerch.com
+*.discordpartygames.com
+*.discordsays.com
+*.discordstatus.com
+*.watchanimeattheoffice.com

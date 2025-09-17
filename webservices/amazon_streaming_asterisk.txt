@@ -1,0 +1,37 @@
+# Title: Blocklist for Amazon Streaming
+# Description: Blocks Amazon Streaming content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509172153
+# Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.aiv-delivery.net
+*.amazonmusic.com
+*.amazonprimevideo.cn
+*.amazonprimevideo.com.cn
+*.amazonprimevideos.com
+*.amazonvideo.cc
+*.amazonvideo.com
+*.amazonvideodirect.com
+*.atv-ext-eu.amazon.com
+*.atv-ext-fe.amazon.com
+*.atv-ext.amazon.com
+*.atv-ps-eu.amazon.co.uk
+*.atv-ps-eu.amazon.com
+*.atv-ps-fe.amazon.co.jp
+*.atv-ps-fe.amazon.com
+*.atv-ps.amazon.com
+*.av-eu.amazon.com
+*.av-na.amazon.com
+*.music.a2z.com
+*.music.amazon.co.uk
+*.music.amazon.com
+*.music.amazon.in
+*.prime-video.com
+*.primevideo.cc
+*.primevideo.com
+*.primevideo.info
+*.primevideo.org
+*.primevideo.tv
+*.video.a2z.com

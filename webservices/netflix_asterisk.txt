@@ -1,0 +1,32 @@
+# Title: Blocklist for Netflix
+# Description: Blocks Netflix content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509172153
+# Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.dualstack.apiproxy-*.amazonaws.com
+*.dualstack.ichnaea-web-*.amazonaws.com
+*.fast.com
+*.netflix.ca
+*.netflix.com
+*.netflix.net
+*.netflixdnstest1.com
+*.netflixdnstest10.com
+*.netflixdnstest2.com
+*.netflixdnstest3.com
+*.netflixdnstest4.com
+*.netflixdnstest5.com
+*.netflixdnstest6.com
+*.netflixdnstest7.com
+*.netflixdnstest8.com
+*.netflixdnstest9.com
+*.netflixinvestor.com
+*.netflixtechblog.com
+*.nflxext.com
+*.nflximg.com
+*.nflximg.net
+*.nflxsearch.net
+*.nflxso.net
+*.nflxvideo.net

@@ -1,0 +1,30 @@
+# Title: Blocklist for Dropbox
+# Description: Blocks Dropbox content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509172153
+# Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.addtodropbox.com
+*.app.hellosign.com
+*.dash.ai
+*.db.tt
+*.docsend.com
+*.dropbox-dns.com
+*.dropbox.com
+*.dropbox.tech
+*.dropbox.zendesk.com
+*.dropboxapi.com
+*.dropboxbusiness.com
+*.dropboxcaptcha.com
+*.dropboxforum.com
+*.dropboxforums.com
+*.dropboxinsiders.com
+*.dropboxlegal.com
+*.dropboxmail.com
+*.dropboxpartners.com
+*.dropboxstatic.com
+*.dropboxteam.com
+*.dropboxusercontent.com
+*.getdropbox.com

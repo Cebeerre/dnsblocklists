@@ -1,0 +1,34 @@
+# Title: Blocklist for Steam
+# Description: Blocks Steam content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509172153
+# Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.csgo.wmsj.cn
+*.dl.steam.clngaa.com
+*.dl.steam.ksyna.com
+*.dota2.wmsj.cn
+*.playartifact.com
+*.s.team
+*.st.dl.bscstorage.net
+*.st.dl.eccdnx.com
+*.st.dl.pinyuncloud.com
+*.steam-api.com
+*.steam-chat.com
+*.steamchina.com
+*.steamcommunity.com
+*.steamcontent.com
+*.steamdeck.com
+*.steamgames.com
+*.steampipe.steamcontent.tnkjmec.com
+*.steampowered.com
+*.steampowered.com.8686c.com
+*.steamserver.net
+*.steamstatic.com
+*.steamstatic.com.8686c.com
+*.steamusercontent.com
+*.underlords.com
+*.valvesoftware.com
+*.wmsjsteam.com

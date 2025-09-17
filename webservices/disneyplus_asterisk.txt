@@ -1,0 +1,16 @@
+# Title: Blocklist for Disney+
+# Description: Blocks Disney+ content
+# Homepage: https://github.com/Cebeerre/dnsblocklists
+# License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
+# Version: 202509172153
+# Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
+# Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+*.disney-plus.net
+*.disney.playback.edge.bamgrid.com
+*.disneynow.com
+*.disneyplus.com
+*.hotstar.com
+*.media.dssott.com
+*.star.playback.edge.bamgrid.com
+*.starplus.com
