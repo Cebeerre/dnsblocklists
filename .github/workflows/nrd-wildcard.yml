@@ -2,7 +2,8 @@ name: Build Hagezi NRD wildcard for Blocky
 
 on:
   schedule:
-    - cron: "0 7 * * *"  
+    - cron: "0 5 * * *"   # 07:00 Europe/Madrid during CEST (UTC+2)
+    - cron: "0 6 * * *"   # 07:00 Europe/Madrid during CET  (UTC+1)
   workflow_dispatch: {}
 
 permissions:
@@ -21,36 +22,45 @@ jobs:
 
           SRC7="https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/domains/nrd7.txt"
           SRC14="https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/domains/nrd14-8.txt"
-          TS="$(date -u +%Y%m%d%H%M)"
 
-          # nrd7 -> wildcard-only
-          curl -fsSL "$SRC7" \
-          | awk 'BEGIN{print "# Title: NRD 7 days (wildcard)"; \
-                       print "# Description: Newly Registered Domains (last 7 days)"; \
-                       print "# Homepage: https://github.com/" ENVIRON["GITHUB_REPOSITORY"]; \
-                       print "# License: https://github.com/" ENVIRON["GITHUB_REPOSITORY"] "/blob/main/LICENSE"; \
-                       print "# Version: " ENVIRON["TS"]; \
-                       print "# Original Source: https://github.com/hagezi/dns-blocklists"; \
-                       print "# Syntax: Domains Wildcard - Blocky (v0.23 or newer)\n#"} \
-                 /^#/ {next} NF {gsub(/\r/,""); print "*." $0}' \
-          | sort -u > NRD/nrd7_asterisk.txt
+          # Version stamp (UTC). For Madrid local time, set TZ=Europe/Madrid before date
+          export TS="$(date -u +%Y%m%d%H%M)"
 
-          # nrd14-8 -> wildcard-only
-          curl -fsSL "$SRC14" \
-          | awk 'BEGIN{print "# Title: NRD 14->8 days (wildcard)"; \
-                       print "# Description: Newly Registered Domains (from day 14 to day 8)"; \
-                       print "# Homepage: https://github.com/" ENVIRON["GITHUB_REPOSITORY"]; \
-                       print "# License: https://github.com/" ENVIRON["GITHUB_REPOSITORY"] "/blob/main/LICENSE"; \
-                       print "# Version: " ENVIRON["TS"]; \
-                       print "# Original Source: https://github.com/hagezi/dns-blocklists"; \
-                       print "# Syntax: Domains Wildcard - Blocky (v0.23 or newer)\n#"} \
-                 /^#/ {next} NF {gsub(/\r/,""); print "*." $0}' \
-          | sort -u > NRD/nrd14-8_asterisk.txt
+          build_file () {
+            local src="$1"
+            local out="$2"
+            local title="$3"
+            local desc="$4"
+
+            # 1) Extract domains -> temp file, sorted & unique
+            curl -fsSL "$src" \
+            | awk '/^#/ {next} NF {gsub(/\r/,""); print "*." $0}' \
+            | sort -u > "${out}.domains"
+
+            # 2) Write header, then append domains
+            {
+              echo "# Title: ${title}"
+              echo "# Description: ${desc}"
+              echo "# Homepage: https://github.com/${GITHUB_REPOSITORY}"
+              echo "# License: https://github.com/${GITHUB_REPOSITORY}/blob/main/LICENSE"
+              echo "# Version: ${TS}"
+              echo "# Original Source: https://github.com/hagezi/dns-blocklists"
+              echo "# Syntax: Domains Wildcard - Blocky (v0.23 or newer)"
+              echo "#"
+              cat "${out}.domains"
+            } > "${out}"
+
+            rm -f "${out}.domains"
+            echo "Wrote ${out} (lines: $(wc -l < "${out}"))"
+          }
+
+          build_file "$SRC7"  "NRD/nrd7_asterisk.txt"    "NRD 7 days (wildcard)"       "Newly Registered Domains (last 7 days)"
+          build_file "$SRC14" "NRD/nrd14-8_asterisk.txt" "NRD 14->8 days (wildcard)"   "Newly Registered Domains (from day 14 to day 8)"
 
           echo "Preview 7d:"
-          head -n 20 NRD/nrd7_asterisk.txt || true
+          head -n 12 NRD/nrd7_asterisk.txt || true
           echo "Preview 14-8d:"
-          head -n 20 NRD/nrd14-8_asterisk.txt || true
+          head -n 12 NRD/nrd14-8_asterisk.txt || true
 
       - name: Commit & push if changed
         uses: stefanzweifel/git-auto-commit-action@v5
