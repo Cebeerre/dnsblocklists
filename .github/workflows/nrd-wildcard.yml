@@ -1,0 +1,41 @@
+name: Build NRD wildcard for Blocky
+
+on:
+  schedule:
+    - cron: "15 2 * * *"   # daily
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build NRD wildcard files
+        run: |
+          set -euo pipefail
+          mkdir -p lists
+
+          SRC7="https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/domains/nrd7.txt"
+          SRC14="https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/domains/nrd14-8.txt"
+
+          # nrd7 -> wildcard-only
+          curl -fsSL "$SRC7" \
+          | awk 'BEGIN{print "# Generated from Hagezi NRD (7d) -> wildcard-only\n# source: "ENVIRON["SRC7"]"\n"} \
+                 /^#/ {next} NF {gsub(/\r/,""); print "*." $0}' \
+          | sort -u > lists/nrd7-wildcard.txt
+
+          # nrd14-8 -> wildcard-only
+          curl -fsSL "$SRC14" \
+          | awk 'BEGIN{print "# Generated from Hagezi NRD (14d-8d) -> wildcard-only\n# source: "ENVIRON["SRC14"]"\n"} \
+                 /^#/ {next} NF {gsub(/\r/,""); print "*." $0}' \
+          | sort -u > lists/nrd14-8-wildcard.txt
+
+      - name: Commit & push if changed
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(nrd): update wildcard lists (7d and 14-8d)"
+          file_pattern: "lists/nrd*-wildcard.txt"
