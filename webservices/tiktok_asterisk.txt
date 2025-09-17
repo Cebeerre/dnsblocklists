@@ -2,9 +2,13 @@
 # Description: Blocks TikTok content
 # Homepage: https://github.com/Cebeerre/dnsblocklists
 # License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
-# Version: 202509172153
+# Version: 202509172253
 # Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
 # Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+#
+# Skipped unsupported rules:
+# Skipped unsupported rule: ||p16-tiktok-*.ibyteimg.com^
+# Skipped unsupported rule: ||v*.tiktokcdn-eu.com^
 #
 *.amemv.com
 *.bdurl.com
@@ -26,7 +30,6 @@
 *.huoshanzhibo.com
 *.muscdn.com
 *.musical.ly
-*.p16-tiktok-*.ibyteimg.com
 *.p16-tiktokcdn-com.akamaized.net
 *.pstatp.com
 *.snssdk.com
@@ -37,5 +40,4 @@
 *.tiktokv.com
 *.ttlivecdn.com
 *.ttlivecdn.com.c.bytefcdn-oversea.com
-*.v*.tiktokcdn-eu.com
 *.zijieapi.com

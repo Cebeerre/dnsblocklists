@@ -2,10 +2,11 @@
 # Description: Blocks Spotify content
 # Homepage: https://github.com/Cebeerre/dnsblocklists
 # License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
-# Version: 202509172153
+# Version: 202509172253
 # Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
 # Syntax: Domains Wildcard - Blocky (v0.23 or newer)
 #
+*./_spotify-connect._tcp.local/
 *.byspotify.com
 *.pscdn.co
 *.scdn.co
