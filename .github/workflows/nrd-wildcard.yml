@@ -2,8 +2,7 @@ name: Build Hagezi NRD wildcard for Blocky
 
 on:
   schedule:
-    - cron: "0 5 * * *"   # 07:00 Europe/Madrid during CEST (UTC+2)
-    - cron: "0 6 * * *"   # 07:00 Europe/Madrid during CET  (UTC+1)
+    - cron: "0 7 * * *"   # 07:00 Europe/Madrid during CEST (UTC+2)
   workflow_dispatch: {}
 
 permissions:
