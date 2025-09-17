@@ -108,4 +108,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(services): refresh wildcard lists from AdGuard registry"
-          file_pattern: "lists/services/*.txt"
+          file_pattern: "webservices/*.txt"
