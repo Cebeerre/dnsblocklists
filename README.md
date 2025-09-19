@@ -17,8 +17,11 @@ It provides domain blocklists already converted into the **wildcard asterisk (`*
 - Source: [hagezi/dns-blocklists](https://github.com/hagezi/dns-blocklists).  
 - Files:  
   - `nrd7_asterisk.txt` → Domains registered in the **last 7 days**.  
-  - `nrd14-8_asterisk.txt` → Domains registered **between day 14 and day 8 ago**.  
+  - `nrd14-8_asterisk.txt` → Domains registered **between day 14 and day 8 ago**.
 
+>[!NOTE]
+>To block NRDs from the last 14 days, combine the domain lists from 7 days ago and 14 days ago. 
+         
 ### `webservices/`
 - Contains one file per web service, each in wildcard format.  
 - Source: [AdGuardTeam/HostlistsRegistry](https://github.com/AdguardTeam/HostlistsRegistry).  
