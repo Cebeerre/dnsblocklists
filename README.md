@@ -20,7 +20,7 @@ It provides domain blocklists already converted into the **wildcard asterisk (`*
   - `nrd14-8_asterisk.txt` → Domains registered **between day 14 and day 8 ago**.
 
 >[!NOTE]
->To block NRDs from the last 14 days, combine the domain lists from 7 days ago and 14 days ago. 
+>To block NRDs from the last 14 days, combine the domain lists from 7 days ago and 14-8 days ago. 
          
 ### `webservices/`
 - Contains one file per web service, each in wildcard format.  
