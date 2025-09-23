@@ -29,7 +29,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq
 
-          # Download yq (one line to avoid trailing-backslash issues)
+          # Download yq
           $CURL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64" -o /usr/local/bin/yq
           chmod +x /usr/local/bin/yq
 
@@ -67,12 +67,42 @@ jobs:
               : > "$SKIPOUT"
 
               awk -v DOMOUT="$DOMOUT" -v SKIPOUT="$SKIPOUT" '
-                function tolower_str(s){ for(i=1;i<=length(s);i++){ c=substr(s,i,1); lc=tolower(c); o=o lc } out=o; o=""; return out }
+                # tolower_str: safe lowercase
+                function tolower_str(s,   i,c,lc,out){ out=""; for(i=1;i<=length(s);i++){ c=substr(s,i,1); lc=tolower(c); out=out lc } return out }
+
+                # is_valid_label: RFC-ish hostname label check
+                function is_valid_label(l) {
+                  if (l == "" || length(l) > 63) return 0
+                  if (l ~ /[^A-Za-z0-9-]/) return 0
+                  if (l ~ /^-/ || l ~ /-$/) return 0
+                  return 1
+                }
+
+                # is_valid_domain: must have at least one dot, total <=253, valid labels, valid TLD
+                function is_valid_domain(d,   labels,n,i,tld) {
+                  if (d ~ /[ \t]/) return 0
+                  if (d ~ /:\/\//) return 0
+                  if (d ~ /[\/_]/) return 0
+                  if (d ~ /^\./ || d ~ /\.$/) return 0
+                  if (length(d) > 253) return 0
+                  n = split(d, labels, /\./)
+                  if (n < 2) return 0    # need at least one dot
+                  for (i = 1; i <= n; i++) {
+                    if (!is_valid_label(labels[i])) return 0
+                  }
+                  tld = labels[n]
+                  # TLD must be letters or punycode xn--
+                  if (!(tld ~ /^[A-Za-z]{2,63}$/ || tld ~ /^xn--[A-Za-z0-9-]{1,59}$/)) return 0
+                  return 1
+                }
+
                 BEGIN{ FS="^" }
+
                 {
                   gsub(/\r/,"")
                   line=$0
                 }
+
                 /^[[:space:]]*$/ { next }
                 /^[[:space:]]*#/  { next }
                 /^[[:space:]]*@@/ { next }         # skip exceptions
@@ -83,50 +113,40 @@ jobs:
                   dom=parts[1]
                   sub(/^[[:space:]]*\|\|/, "", dom)
                   sub(/[,|$].*$/, "", dom)
-                  # reject if contains any wildcard (unsupported for || rules)
-                  if (dom ~ /\*/) {
+                  dom=tolower_str(dom)
+                  if (!is_valid_domain(dom)) {
                     print "# Skipped unsupported rule: " line >> SKIPOUT
                     next
                   }
-                  # sanitize
-                  sub(/^\.+/,"",dom); sub(/\.+$/,"",dom)
-                  if (dom ~ /\./ && dom !~ /:\/\//) {
-                    dom=tolower_str(dom)
-                    print "*." dom >> DOMOUT
-                  }
+                  print "*." dom >> DOMOUT
                   next
                 }
 
                 # Case 2: Direct domain or wildcard domain
                 {
                   dom=line
-                  # drop params (rare in direct lines)
-                  sub(/[,|$].*$/, "", dom)
-                  # normalize
+                  sub(/[,|$].*$/, "", dom)                     # drop trailing params
                   sub(/^[[:space:]]+/,"",dom); sub(/[[:space:]]+$/,"",dom)
-                  # If starts with "*.", check if there are more "*" later
+
+                  # Wildcard prefix: validate the rest
                   if (dom ~ /^\*\./) {
                     rest=substr(dom,3)
-                    if (rest ~ /\*/) {
+                    rest=tolower_str(rest)
+                    if (!is_valid_domain(rest)) {
                       print "# Skipped unsupported rule: " line >> SKIPOUT
                       next
                     }
-                    sub(/\.+$/,"",dom)
-                    dom=tolower_str(dom)
-                    print dom >> DOMOUT
+                    print "*." rest >> DOMOUT
                     next
                   }
-                  # If contains any "*" elsewhere -> unsupported
-                  if (dom ~ /\*/) {
+
+                  # Plain domain: validate and convert to *.domain
+                  dom=tolower_str(dom)
+                  if (!is_valid_domain(dom)) {
                     print "# Skipped unsupported rule: " line >> SKIPOUT
                     next
                   }
-                  # Plain domain -> convert to *.domain
-                  sub(/^\.+/,"",dom); sub(/\.+$/,"",dom)
-                  if (dom ~ /\./ && dom !~ /:\/\//) {
-                    dom=tolower_str(dom)
-                    print "*." dom >> DOMOUT
-                  }
+                  print "*." dom >> DOMOUT
                 }
               ' /tmp/rules.txt
 
@@ -157,5 +177,5 @@ jobs:
       - name: Commit & push if changed
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore(services): refresh wildcard lists from AdGuard registry (skip unsupported)"
+          commit_message: "chore(services): refresh wildcard lists from AdGuard registry (validated domains)"
           file_pattern: "webservices/*.txt"
