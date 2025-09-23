@@ -2,7 +2,8 @@
 # Description: Blocks Olvid content (sourced from AdGuardTeam's HostlistsRegistry)
 # Homepage: https://github.com/Cebeerre/dnsblocklists
 # License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
-# Version: 202509230854
+# Version: 202509230911
+# Entries: 2
 # Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
 # Syntax: Domains Wildcard - Blocky (v0.23 or newer)
 #
