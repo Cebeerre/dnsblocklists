@@ -45,7 +45,7 @@ jobs:
 
           out_dir  = pathlib.Path("webservices"); out_dir.mkdir(parents=True, exist_ok=True)
           icon_dir = pathlib.Path("icons");       icon_dir.mkdir(parents=True, exist_ok=True)
-          cks_dir  = pathlib.Path("checksums");   cks_dir.mkdir(parents=True, exist_ok=True)
+          cks_dir  = pathlib.Path(".checksums");   cks_dir.mkdir(parents=True, exist_ok=True)
 
           TS = time.strftime("%Y%m%d%H%M", time.gmtime())
 
