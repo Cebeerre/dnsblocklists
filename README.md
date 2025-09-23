@@ -4,10 +4,10 @@ This repository exists purely for **convenience**.
 It provides domain blocklists already converted into the **wildcard asterisk (`*.domain`) format** for use with [Blocky](https://github.com/0xERR0R/blocky) (v0.23 or newer).
 
 >[!NOTE]
-The wildcard is not strictly required by Blocky itself, but it is necessary if you want subdomains to be blocked as well. Blocky can consume plain domain lists, but in that case it only blocks the exact domain (the **apex domain**, e.g. `example.com`).
+>The wildcard is not strictly required by Blocky itself, but it is necessary if you want subdomains to be blocked as well. Blocky can consume plain domain lists, but in that case it only blocks the exact domain (the **apex domain**, e.g. `example.com`).
 >
-> - `example.com` → blocks only `example.com`  
-> - `*.example.com` → blocks `example.com` and all its subdomains (`sub.example.com`, `a.b.example.com`, …)
+>- `example.com` → blocks only `example.com`  
+>- `*.example.com` → blocks `example.com` and all its subdomains (`sub.example.com`, `a.b.example.com`, …)
 
 
 ⚠️ **Important:**  
@@ -20,15 +20,19 @@ The wildcard is not strictly required by Blocky itself, but it is necessary if y
 ## 📂 Repository Structure
 
 ### `NRD/`
-- Contains **Newly Registered Domain (NRD)** lists converted to wildcard format.  
-- Source: [hagezi/dns-blocklists](https://github.com/hagezi/dns-blocklists).  
-- Files:  
-  - `nrd7_asterisk.txt` → Domains registered in the **last 7 days**.  
-  - `nrd14-8_asterisk.txt` → Domains registered **between day 14 and day 8 ago**.
+Contains **Newly Registered Domain (NRD)** lists converted to wildcard format from multiple upstreams.
 
->[!NOTE]
->To block NRDs from the last 14 days, combine the domain lists from 7 days ago and 14-8 days ago. 
-         
+- **Hagezi NRD**  
+  Source: [hagezi/dns-blocklists](https://github.com/hagezi/dns-blocklists)  
+  Files:  
+  - [`nrd7_asterisk.txt`](https://raw.githubusercontent.com/Cebeerre/dnsblocklists/refs/heads/main/NRD/nrd7_asterisk.txt) → Domains registered in the **last 7 days**.  
+  - [`nrd14-8_asterisk.txt`](https://raw.githubusercontent.com/Cebeerre/dnsblocklists/refs/heads/main/NRD/nrd14-8_asterisk.txt) → Domains registered **between day 14 and day 8 ago**.
+
+- **DNSBunker NRD**  
+  Source: [xRuffKez/NRD (DNSBunker)](https://codeberg.org/xRuffKez/NRD)  
+  Files:  
+  - [`nrd14_wildcard_dnsbuker.txt`](https://raw.githubusercontent.com/Cebeerre/dnsblocklists/refs/heads/main/NRD/nrd14_wildcard_dnsbuker.txt) → Domains registered in the **last 14 days**.
+
 ### `webservices/`
 - Contains one file per web service, each in wildcard format.  
 - Source: [AdGuardTeam/HostlistsRegistry](https://github.com/AdguardTeam/HostlistsRegistry).  
@@ -39,7 +43,7 @@ The wildcard is not strictly required by Blocky itself, but it is necessary if y
 
 > [!NOTE]  
 > Each generated list may include a section labeled **“Skipped unsupported rules”**.  
-> These lines come directly from the upstream sources but cannot be expressed in Blocky’s wildcard format.  
+> These lines come directly from the AdGuard upstream sources but cannot be expressed in Blocky’s wildcard format.  
 > Examples include:
 > - Wildcards inside labels (e.g., `||awsdns-*.tld^`)  
 > - Single-pipe Adblock anchors (e.g., `|domain^`, likely typos for `||domain^`)  
@@ -47,7 +51,6 @@ The wildcard is not strictly required by Blocky itself, but it is necessary if y
 > - Rules containing slashes, schemes, or parameters  
 >
 > Skipped rules are shown in the file header for transparency but are **not included** in the active blocklist.  
-> The `# Entries:` count refers only to the valid, usable domains.
 
 ---
 
