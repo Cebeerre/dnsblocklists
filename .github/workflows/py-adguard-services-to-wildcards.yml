@@ -1,4 +1,4 @@
-name: Build AdGuard Webservices Wildcard for Blocky
+name: Build AdGuard services -> wildcard lists
 
 on:
   schedule:
@@ -14,65 +14,67 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.x"
 
       - name: Install dependencies
-        run: |
-          pip install pyyaml requests
+        run: pip install pyyaml requests
 
       - name: Build lists, extract icons, write SERVICES.md and update README rows
         run: |
-          import os, requests, yaml, hashlib, pathlib, re
+          python <<'EOF'
+          import os, re, pathlib, hashlib, requests, yaml
 
-          base_url = "https://raw.githubusercontent.com/AdguardTeam/HostlistsRegistry/main/services"
-          repo_base = "https://Cebeerre.github.io/dnsblocklists"
-          checksums_dir = pathlib.Path(".checksums")
-          checksums_dir.mkdir(exist_ok=True)
+          BASE = "https://raw.githubusercontent.com/AdguardTeam/HostlistsRegistry/main/services"
+          REPO_BASE = "https://Cebeerre.github.io/dnsblocklists"
+          CHECKSUM_DIR = pathlib.Path(".checksums")
+          CHECKSUM_DIR.mkdir(exist_ok=True)
 
           outdir = pathlib.Path("webservices")
           outdir.mkdir(exist_ok=True)
           icons_dir = pathlib.Path("icons")
           icons_dir.mkdir(exist_ok=True)
 
-          services = []
+          # fetch index
           resp = requests.get("https://api.github.com/repos/AdguardTeam/HostlistsRegistry/contents/services")
           resp.raise_for_status()
-          for entry in resp.json():
-              if entry["name"].endswith(".yaml"):
-                  services.append(entry["name"])
+          entries = [e for e in resp.json() if e["name"].endswith(".yaml")]
 
-          table_rows = []
-          for s in sorted(services):
-              service_id = s.replace(".yaml", "")
-              url = f"{base_url}/{s}"
+          services = []
+          for entry in entries:
+              service = entry["name"].replace(".yaml", "")
+              url = f"{BASE}/{entry['name']}"
               r = requests.get(url)
               r.raise_for_status()
-              data = yaml.safe_load(r.text)
+              raw = r.text
 
-              # Calculate checksum
-              sha256 = hashlib.sha256(r.text.encode("utf-8")).hexdigest()
-              checksum_file = checksums_dir / f"{service_id}.sha256"
+              # checksum check
+              sha = hashlib.sha256(raw.encode("utf-8")).hexdigest()
+              checksum_file = CHECKSUM_DIR / f"{service}.sha256"
+              if checksum_file.exists() and checksum_file.read_text() == sha:
+                  print(f"Skipping {service}, no changes.")
+                  continue
+              checksum_file.write_text(sha)
 
-              if checksum_file.exists() and checksum_file.read_text() == sha256:
-                  print(f"Skipping {service_id}, no changes.")
-                  continue  # skip unchanged
+              data = yaml.safe_load(raw)
+              services.append((service, data))
 
-              checksum_file.write_text(sha256)
-
-              # Build .txt file
-              txtfile = outdir / f"{service_id}_asterisk.txt"
+              # build .txt
+              txtfile = outdir / f"{service}_asterisk.txt"
               domains = []
+              skipped = []
+
               for rule in data.get("rules", []):
                   if rule.startswith("||") and rule.endswith("^"):
                       d = rule[2:-1]
                       if "." in d and not any(c in d for c in " /\\:*?\"'<>|"):
                           domains.append(f"*.{d}")
+                      else:
+                          skipped.append(rule)
                   else:
-                      # Skip unsupported
-                      pass
+                      skipped.append(rule)
 
               domains = sorted(set(domains))
 
@@ -85,49 +87,47 @@ jobs:
                   f.write(f"# Original Source: {url}\n")
                   f.write(f"# Entries: {len(domains)}\n")
                   f.write("#\n")
+                  if skipped:
+                      f.write("# Skipped unsupported rules:\n")
+                      for r in skipped:
+                          f.write(f"# {r}\n")
+                      f.write("#\n")
                   for d in domains:
                       f.write(d + "\n")
 
-              print(f"Wrote {txtfile} ({len(domains)} entries)")
+              print(f"Wrote {txtfile} ({len(domains)} entries, {len(skipped)} skipped)")
 
-              # Write icon if exists
+              # save icon
               icon_svg = data.get("icon_svg")
               if icon_svg:
-                  with open(icons_dir / f"{service_id}.svg", "w", encoding="utf-8") as f:
+                  with open(icons_dir / f"{service}.svg", "w", encoding="utf-8") as f:
                       f.write(icon_svg)
 
-          # Generate SERVICES.md
+          # rebuild SERVICES.md
           with open("SERVICES.md", "w", encoding="utf-8") as f:
               f.write("## 🌐 Webservice Blocklists\n\n")
-              f.write("Blocklists targeting specific **web platforms and services**.\n")
-              f.write("Automatically generated from [AdGuardTeam/HostlistsRegistry](https://github.com/AdguardTeam/HostlistsRegistry).\n")
-              f.write("Each list is already in wildcard format for Blocky.\n\n")
               f.write("| Icon | Service | Link |\n")
               f.write("|------|---------|------|\n")
-              for s in sorted(services):
-                  service_id = s.replace(".yaml", "")
-                  icon_path = f"icons/{service_id}.svg"
+              for service, data in sorted(services):
+                  icon_path = f"icons/{service}.svg"
                   icon_md = f'<img src="{icon_path}" width="20" height="20"/>' if os.path.exists(icon_path) else ""
-                  f.write(f"| {icon_md} | {service_id.capitalize()} | [{service_id}_asterisk.txt]({repo_base}/webservices/{service_id}_asterisk.txt) |\n")
+                  f.write(f"| {icon_md} | {data.get('name', service)} | [{service}_asterisk.txt]({REPO_BASE}/webservices/{service}_asterisk.txt) |\n")
 
-          # Update README.md table rows
-          readme_path = pathlib.Path("README.md")
-          readme_text = readme_path.read_text(encoding="utf-8")
-          marker_start = "<!-- START:SERVICES -->"
-          marker_end = "<!-- END:SERVICES -->"
-          new_table = pathlib.Path("SERVICES.md").read_text(encoding="utf-8")
-          new_text = re.sub(f"{marker_start}.*?{marker_end}",
-                            f"{marker_start}\n{new_table}\n{marker_end}",
-                            readme_text,
-                            flags=re.DOTALL)
-          if new_text != readme_text:
-              readme_path.write_text(new_text, encoding="utf-8")
-              print("README: services table injected")
-          else:
-              print("README already up to date")
+          # inject SERVICES.md into README.md
+          readme = pathlib.Path("README.md").read_text(encoding="utf-8")
+          marker_start, marker_end = "<!-- START:SERVICES -->", "<!-- END:SERVICES -->"
+          table = pathlib.Path("SERVICES.md").read_text(encoding="utf-8")
+          new = re.sub(f"{marker_start}.*?{marker_end}", f"{marker_start}\n{table}\n{marker_end}", readme, flags=re.DOTALL)
+          pathlib.Path("README.md").write_text(new, encoding="utf-8")
+          EOF
 
       - name: Commit & push if changed
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore(services): refresh lists, icons, SERVICES.md (+entries)"
-          file_pattern: "webservices/*.txt icons/*.svg SERVICES.md .checksums/*.sha256 README.md"
+          commit_message: "chore(services): refresh lists, icons, SERVICES.md (+entries, +checksums)"
+          file_pattern: |
+            webservices/*.txt
+            icons/*.svg
+            SERVICES.md
+            README.md
+            .checksums/*.sha256
