@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      SRC_INDEX: https://api.github.com/repos/AdguardTeam/HostlistsRegistry/contents/services?ref=main
+      SRC_DIR_ENDPOINT: https://api.github.com/repos/AdguardTeam/HostlistsRegistry/contents/services
       ORIG_SOURCE: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
 
     steps:
@@ -35,12 +35,11 @@ jobs:
           import requests, yaml, idna
           from requests.adapters import HTTPAdapter, Retry
 
-          # --- Env / paths ---
           REPO = os.environ.get("GITHUB_REPOSITORY", "")
           OWNER, _, NAME = REPO.partition("/")
           PAGES_BASE = f"https://{OWNER}.github.io/{NAME}"
-          SRC_INDEX   = os.environ["SRC_INDEX"]
-          ORIG_SOURCE = os.environ["ORIG_SOURCE"]
+          SRC_DIR_ENDPOINT = os.environ["SRC_DIR_ENDPOINT"]
+          ORIG_SOURCE  = os.environ["ORIG_SOURCE"]
 
           out_dir  = pathlib.Path("webservices")
           icon_dir = pathlib.Path("icons")
@@ -49,7 +48,7 @@ jobs:
 
           TS = time.strftime("%Y%m%d%H%M", time.gmtime())
 
-          # --- HTTP session (retries/timeouts like curl flags) ---
+          # HTTP session (retries + timeouts similar to your curl flags)
           sess = requests.Session()
           retries = Retry(
               total=2, connect=2, read=2, backoff_factor=1,
@@ -59,14 +58,19 @@ jobs:
           adapter = HTTPAdapter(max_retries=retries, pool_connections=4, pool_maxsize=8)
           sess.mount("http://", adapter)
           sess.mount("https://", adapter)
-          sess.headers.update({"User-Agent": "adguard-webservices-builder/1.3"})
+          sess.headers.update({"User-Agent": "adguard-webservices-builder/1.4"})
 
-          def http_get(url: str) -> bytes:
+          def http_get_json(url: str):
+              r = sess.get(url, timeout=(5, 20))
+              r.raise_for_status()
+              return r.json()
+
+          def http_get_bytes(url: str) -> bytes:
               r = sess.get(url, timeout=(5, 20))
               r.raise_for_status()
               return r.content
 
-          # --- Domain validation (RFC-ish + IDNA/UTS-46) ---
+          # RFC-ish + IDNA domain validator
           _label_re = re.compile(r"^[a-z0-9-]{1,63}$", re.IGNORECASE)
           def _is_valid_label(label: str) -> bool:
               return bool(label) and len(label) <= 63 and label[0] != '-' and label[-1] != '-' and _label_re.fullmatch(label)
@@ -79,7 +83,8 @@ jobs:
                   ascii_d = idna.encode(d, uts46=True, std3_rules=True).decode("ascii")
               except idna.IDNAError:
                   return None
-              if len(ascii_d) > 253: return None
+              if len(ascii_d) > 253:
+                  return None
               labels = ascii_d.split(".")
               if len(labels) < 2 or not all(_is_valid_label(l) for l in labels):
                   return None
@@ -111,28 +116,37 @@ jobs:
               dom_ascii = normalize_domain_ascii(plain)
               return (dom_ascii, None if dom_ascii else "invalid_domain")
 
-          # --- Fetch services index (list of YAML files) ---
-          try:
-              idx_data = json.loads(http_get(SRC_INDEX))
-          except Exception as e:
-              print(f"ERROR: failed to fetch index {SRC_INDEX}: {e}", file=sys.stderr)
-              sys.exit(1)
+          # 1) List ALL YAMLs in services/ with pagination
+          print("Fetching services directory listing with pagination…")
+          page = 1
+          per_page = 100
+          entries = []
+          while True:
+              url = f"{SRC_DIR_ENDPOINT}?ref=main&per_page={per_page}&page={page}"
+              chunk = http_get_json(url)
+              if not isinstance(chunk, list) or not chunk:
+                  break
+              entries.extend(chunk)
+              page += 1
+          print(f"Directory entries fetched: {len(entries)}")
 
           upstream_sids: set[str] = set()
           services_count = 0
           icons_written = 0
 
-          for entry in idx_data:
+          # 2) Process each service YAML
+          for entry in entries:
               if entry.get("type") != "file":
                   continue
-              url  = entry.get("download_url")
-              if not url:
+              raw_url = entry.get("download_url")
+              if not raw_url:
                   continue
 
+              name = entry.get("name", "unknown")
               try:
-                  yml = yaml.safe_load(http_get(url)) or {}
+                  yml = yaml.safe_load(http_get_bytes(raw_url)) or {}
               except Exception as e:
-                  print(f"WARN: YAML parse failed for {entry.get('name')}: {e}", file=sys.stderr)
+                  print(f"WARN: YAML parse failed for {name}: {e}", file=sys.stderr)
                   continue
 
               sid_raw = (yml.get("id") or yml.get("name") or "unknown")
@@ -141,7 +155,7 @@ jobs:
               upstream_sids.add(sid)
               services_count += 1
 
-              # Save icon from per-service YAML (as you noted, it's always present)
+              # Save icon from per-service YAML
               icon_svg = yml.get("icon_svg")
               if isinstance(icon_svg, str) and "<svg" in icon_svg.lower():
                   try:
@@ -184,7 +198,7 @@ jobs:
 
           print(f"Services processed: {services_count}, icons written: {icons_written}")
 
-          # --- Sync deletions (lists & icons no longer in upstream) ---
+          # 3) Sync deletions: lists & icons no longer in upstream
           def sid_from_txt(path: pathlib.Path) -> str:
               return path.name.removesuffix("_asterisk.txt")
 
@@ -200,7 +214,7 @@ jobs:
                   try: p.unlink()
                   except FileNotFoundError: pass
 
-          # --- Update README table (Icon | Name | Link) ---
+          # 4) Update README table (Icon | Name | Link)
           readme_path = pathlib.Path("README.md")
           if not readme_path.exists():
               print("README.md not found, skipping table update.")
@@ -226,7 +240,6 @@ jobs:
           """)
           table_md = header + "".join(f"| {icon} | {name} | {link} |\n" for icon, name, link in rows)
 
-          # Replace between markers (robust regex, tolerates spaces/newlines/case)
           START = r"<!--\s*BEGIN:SERVICES_TABLE\s*-->"
           END   = r"<!--\s*END:SERVICES_TABLE\s*-->"
           readme = readme_path.read_text(encoding="utf-8")
