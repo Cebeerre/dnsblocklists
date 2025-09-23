@@ -212,7 +212,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(services): refresh lists, icons, SERVICES.md (+entries)"
-          file_pattern: |
-            webservices/*.txt
-            icons/*.svg
-            SERVICES.md
+          add_options: "-A"   # force-add new files, but also catch deletions
