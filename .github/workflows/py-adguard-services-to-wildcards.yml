@@ -2,7 +2,7 @@ name: Build AdGuard Webservices -> wildcard lists (Python + YAML checksums)
 
 on:
   schedule:
-    - cron: "20 3 * * 1"   # weekly: Mon 03:20 UTC (adjust if you prefer hourly)
+    - cron: "0 0 * * *"
   workflow_dispatch: {}
 
 permissions:
