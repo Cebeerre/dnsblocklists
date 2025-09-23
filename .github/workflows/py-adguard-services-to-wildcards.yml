@@ -126,8 +126,4 @@ jobs:
         with:
           commit_message: "chore(services): refresh lists, icons, SERVICES.md (+entries, +checksums)"
           file_pattern: |
-            webservices/*.txt
-            icons/*.svg
-            SERVICES.md
-            README.md
-            .checksums/*.sha256
+          add_options: "-A"
