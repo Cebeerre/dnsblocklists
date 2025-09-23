@@ -12,8 +12,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      SRC_DIR_ENDPOINT: https://api.github.com/repos/AdguardTeam/HostlistsRegistry/contents/services
       ORIG_SOURCE: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
+      # single tree API call (recursive) to list all files
+      TREE_API: https://api.github.com/repos/AdguardTeam/HostlistsRegistry/git/trees/main?recursive=1
 
     steps:
       - uses: actions/checkout@v4
@@ -29,6 +30,8 @@ jobs:
           pip install requests PyYAML idna
 
       - name: Build lists, extract icons, sync deletions, update README table
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python - <<'PY'
           import os, re, sys, time, json, pathlib, textwrap
@@ -38,8 +41,9 @@ jobs:
           REPO = os.environ.get("GITHUB_REPOSITORY", "")
           OWNER, _, NAME = REPO.partition("/")
           PAGES_BASE = f"https://{OWNER}.github.io/{NAME}"
-          SRC_DIR_ENDPOINT = os.environ["SRC_DIR_ENDPOINT"]
-          ORIG_SOURCE  = os.environ["ORIG_SOURCE"]
+          TREE_API   = os.environ["TREE_API"]
+          ORIG_SOURCE= os.environ["ORIG_SOURCE"]
+          TOKEN      = os.environ.get("GITHUB_TOKEN", "")
 
           out_dir  = pathlib.Path("webservices")
           icon_dir = pathlib.Path("icons")
@@ -48,29 +52,32 @@ jobs:
 
           TS = time.strftime("%Y%m%d%H%M", time.gmtime())
 
-          # HTTP session (retries + timeouts similar to your curl flags)
+          # HTTP session
           sess = requests.Session()
           retries = Retry(
               total=2, connect=2, read=2, backoff_factor=1,
               status_forcelist=(429, 500, 502, 503, 504),
               allowed_methods=frozenset(["GET", "HEAD"])
           )
-          adapter = HTTPAdapter(max_retries=retries, pool_connections=4, pool_maxsize=8)
+          adapter = HTTPAdapter(max_retries=retries, pool_connections=8, pool_maxsize=16)
           sess.mount("http://", adapter)
           sess.mount("https://", adapter)
-          sess.headers.update({"User-Agent": "adguard-webservices-builder/1.4"})
+          sess.headers.update({"User-Agent": "adguard-webservices-builder/1.5"})
+          if TOKEN:
+              sess.headers.update({"Authorization": f"Bearer {TOKEN}"})
 
-          def http_get_json(url: str):
+          def api_get_json(url: str):
               r = sess.get(url, timeout=(5, 20))
               r.raise_for_status()
               return r.json()
 
-          def http_get_bytes(url: str) -> bytes:
-              r = sess.get(url, timeout=(5, 20))
+          def cdn_get_bytes(url: str) -> bytes:
+              # raw.githubusercontent.com fetch (no API rate limit)
+              r = requests.get(url, timeout=(5, 20))
               r.raise_for_status()
               return r.content
 
-          # RFC-ish + IDNA domain validator
+          # --- Domain validation (RFC-ish + IDNA/UTS-46) ---
           _label_re = re.compile(r"^[a-z0-9-]{1,63}$", re.IGNORECASE)
           def _is_valid_label(label: str) -> bool:
               return bool(label) and len(label) <= 63 and label[0] != '-' and label[-1] != '-' and _label_re.fullmatch(label)
@@ -93,7 +100,7 @@ jobs:
                   return None
               return ascii_d
 
-          def parse_rule_to_domain(rule: str) -> tuple[str | None, str | None]:
+          def parse_rule_to_domain(rule: str):
               s = rule.strip()
               if not s or s.startswith("#") or s.startswith("@@"):
                   return (None, "comment_or_exception")
@@ -116,35 +123,25 @@ jobs:
               dom_ascii = normalize_domain_ascii(plain)
               return (dom_ascii, None if dom_ascii else "invalid_domain")
 
-          # 1) List ALL YAMLs in services/ with pagination
-          print("Fetching services directory listing with pagination…")
-          page = 1
-          per_page = 100
-          entries = []
-          while True:
-              url = f"{SRC_DIR_ENDPOINT}?ref=main&per_page={per_page}&page={page}"
-              chunk = http_get_json(url)
-              if not isinstance(chunk, list) or not chunk:
-                  break
-              entries.extend(chunk)
-              page += 1
-          print(f"Directory entries fetched: {len(entries)}")
+          # 1) Single API call: list repo tree recursively; filter services/*.yml
+          print("Listing repo tree via GitHub API (recursive)…")
+          tree = api_get_json(TREE_API)
+          if tree.get("truncated"):
+              print("WARN: tree listing is truncated by GitHub (very large repo).", file=sys.stderr)
+          all_paths = [t["path"] for t in tree.get("tree", []) if t.get("type") == "blob"]
+          svc_paths = [p for p in all_paths if p.startswith("services/") and p.endswith(".yml")]
+          print(f"Service YAML files found: {len(svc_paths)}")
 
           upstream_sids: set[str] = set()
           services_count = 0
           icons_written = 0
 
-          # 2) Process each service YAML
-          for entry in entries:
-              if entry.get("type") != "file":
-                  continue
-              raw_url = entry.get("download_url")
-              if not raw_url:
-                  continue
-
-              name = entry.get("name", "unknown")
+          # 2) Fetch each YAML via raw CDN, parse rules + icon_svg
+          for rel in sorted(svc_paths):
+              raw_url = f"https://raw.githubusercontent.com/AdguardTeam/HostlistsRegistry/main/{rel}"
+              name = rel.split("/")[-1]
               try:
-                  yml = yaml.safe_load(http_get_bytes(raw_url)) or {}
+                  yml = yaml.safe_load(cdn_get_bytes(raw_url)) or {}
               except Exception as e:
                   print(f"WARN: YAML parse failed for {name}: {e}", file=sys.stderr)
                   continue
@@ -155,7 +152,6 @@ jobs:
               upstream_sids.add(sid)
               services_count += 1
 
-              # Save icon from per-service YAML
               icon_svg = yml.get("icon_svg")
               if isinstance(icon_svg, str) and "<svg" in icon_svg.lower():
                   try:
@@ -164,12 +160,10 @@ jobs:
                   except Exception as e:
                       print(f"WARN: could not write icon for {sid}: {e}", file=sys.stderr)
 
-              # Build domains
               rules = yml.get("rules") or []
               if not isinstance(rules, list): rules = []
               domains = set()
               skipped = []
-
               for line in rules:
                   if not isinstance(line, str): continue
                   dom_ascii, reason = parse_rule_to_domain(line)
@@ -198,7 +192,7 @@ jobs:
 
           print(f"Services processed: {services_count}, icons written: {icons_written}")
 
-          # 3) Sync deletions: lists & icons no longer in upstream
+          # 3) Sync deletions
           def sid_from_txt(path: pathlib.Path) -> str:
               return path.name.removesuffix("_asterisk.txt")
 
