@@ -32,7 +32,7 @@ Blocklists of **newly registered domains**, which are often abused for malicious
 > I also provide DNSBunker’s 14-day list as an alternative source. Since I don’t know how either project curates or sources their data, using both together might increase coverage but also make lists very large.  
 > Blocky will deduplicate entries automatically, but loading these lists alltogether can increase startup times and **memory (RAM) usage**.
 
-And as per Hagezi's recommendations:
+And as per Hagezi's recommendations from his repo:
 
 > [!WARNING]
 > These lists are very large and resource-intensive. They may cause high memory usage and contain false positives, since some legitimate domains are newly registered. Use with caution and whitelist critical services as needed.
