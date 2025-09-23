@@ -191,8 +191,6 @@ Each list is already in wildcard format for Blocky.
 ## 🔄 How It Works
 
 - GitHub Actions workflows run on a schedule:  
-  - **NRD lists** → refreshed **daily**.  
-  - **Webservice lists** → refreshed **weekly**.  
 - The workflows:  
   1. Fetch the upstream lists in their original formats.  
   2. Convert them into `*.domain` wildcard format.  
