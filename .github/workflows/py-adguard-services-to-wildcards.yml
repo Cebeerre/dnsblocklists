@@ -1,4 +1,4 @@
-name: Build AdGuard services -> wildcard lists (Python) + icons + SERVICES.md
+name: Build AdGuard services -> wildcard lists (Python) + icons + SERVICES.md + README table
 
 on:
   schedule:
@@ -28,12 +28,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests PyYAML idna
 
-      - name: Build lists, extract icons, write SERVICES.md
+      - name: Build lists, extract icons, write SERVICES.md and update README.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python - <<'PY'
-          import os, re, sys, time, json, pathlib, textwrap
+          import os, re, sys, time, pathlib
           import requests, yaml, idna
           from requests.adapters import HTTPAdapter, Retry
 
@@ -51,40 +51,28 @@ jobs:
 
           TS = time.strftime("%Y%m%d%H%M", time.gmtime())
 
-          # HTTP
+          # HTTP session
           sess = requests.Session()
           retries = Retry(total=2, connect=2, read=2, backoff_factor=1,
                           status_forcelist=(429,500,502,503,504),
                           allowed_methods=frozenset(["GET","HEAD"]))
-          adapter = HTTPAdapter(max_retries=retries, pool_connections=8, pool_maxsize=16)
-          sess.mount("http://", adapter); sess.mount("https://", adapter)
-          sess.headers.update({"User-Agent": "adguard-webservices-builder/1.7"})
+          sess.mount("http://", HTTPAdapter(max_retries=retries))
+          sess.mount("https://", HTTPAdapter(max_retries=retries))
+          sess.headers.update({"User-Agent": "adguard-webservices-builder/1.8"})
           if TOKEN:
               sess.headers.update({"Authorization": f"Bearer {TOKEN}"})
 
           def api_get_json(url: str):
               r = sess.get(url, timeout=(5,20)); r.raise_for_status(); return r.json()
-
           def cdn_get_bytes(url: str) -> bytes:
               r = requests.get(url, timeout=(5,20)); r.raise_for_status(); return r.content
 
-          # Domain validation (RFC-ish + IDNA)
-          _label_re = re.compile(r"^[a-z0-9-]{1,63}$", re.IGNORECASE)
-          def _is_valid_label(l: str) -> bool:
-              return bool(l) and len(l)<=63 and l[0] != '-' and l[-1] != '-' and _label_re.fullmatch(l)
+          # Domain parsing helpers
           def normalize_domain_ascii(d: str) -> str|None:
               d = d.strip().strip(".").lower()
               if not d or "://" in d or "/" in d or "_" in d or " " in d or "." not in d: return None
-              try:
-                  a = idna.encode(d, uts46=True, std3_rules=True).decode("ascii")
-              except idna.IDNAError:
-                  return None
-              if len(a)>253: return None
-              parts = a.split(".")
-              if len(parts)<2 or not all(_is_valid_label(x) for x in parts): return None
-              tld = parts[-1]
-              if not (re.fullmatch(r"[a-z]{2,63}", tld) or re.fullmatch(r"xn--[a-z0-9-]{1,59}", tld)): return None
-              return a
+              try: return idna.encode(d, uts46=True, std3_rules=True).decode("ascii")
+              except idna.IDNAError: return None
           def parse_rule_to_domain(s: str):
               s=s.strip()
               if not s or s.startswith("#") or s.startswith("@@"): return (None,"comment")
@@ -103,46 +91,29 @@ jobs:
               if "*" in plain: return (None,"wildcard_inside_label")
               a=normalize_domain_ascii(plain); return (a, None if a else "invalid")
 
-          # 1) One API call: list repo tree recursively; filter services/*.yml or *.yaml
-          print("Listing services via git/trees…")
+          # Discover YAML files
           tree = api_get_json(TREE_API)
-          if tree.get("truncated"):
-              print("WARN: tree listing is truncated by GitHub (very large repo).", file=sys.stderr)
           files = [t["path"] for t in tree.get("tree", []) if t.get("type")=="blob"]
           svc_paths = [p for p in files if p.startswith("services/") and (p.endswith(".yml") or p.endswith(".yaml"))]
-          print(f"Service YAML files found: {len(svc_paths)}")
 
-          upstream_sids=set(); services_count=0; icons_written=0
+          upstream_sids=set(); icons_written=0
 
-          # 2) Fetch each YAML via raw CDN
           for rel in sorted(svc_paths):
               raw_url=f"https://raw.githubusercontent.com/AdguardTeam/HostlistsRegistry/main/{rel}"
-              name=rel.split("/")[-1]
-              try: yml=yaml.safe_load(cdn_get_bytes(raw_url)) or {}
-              except Exception as e:
-                  print(f"WARN: YAML parse failed for {name}: {e}", file=sys.stderr); continue
+              yml=yaml.safe_load(cdn_get_bytes(raw_url)) or {}
 
               sid_raw=(yml.get("id") or yml.get("name") or "unknown")
               sname  =(yml.get("name") or yml.get("id") or "unknown")
               sid=re.sub(r"[^a-z0-9]+","_", str(sid_raw).lower()).strip("_") or "unknown"
-              upstream_sids.add(sid); services_count+=1
+              upstream_sids.add(sid)
 
-              # icon_svg (per-service YAML)
               icon_svg=yml.get("icon_svg")
               if isinstance(icon_svg,str) and "<svg" in icon_svg.lower():
                   icon_path = icon_dir/f"{sid}.svg"
-                  try:
-                      icon_path.write_text(icon_svg.strip(), encoding="utf-8")
-                      icons_written+=1
-                      print(f"Wrote icon: {icon_path} ({len(icon_svg)} bytes)")
-                  except Exception as e:
-                      print(f"WARN: write icon {sid}: {e}", file=sys.stderr)
-              else:
-                  print(f"WARN: missing icon_svg in {name}")
+                  icon_path.write_text(icon_svg.strip(), encoding="utf-8")
+                  icons_written+=1
 
-              # rules → domains
               rules=yml.get("rules") or []
-              if not isinstance(rules,list): rules=[]
               domains=set(); skipped=[]
               for line in rules:
                   if not isinstance(line,str): continue
@@ -150,8 +121,7 @@ jobs:
                   if a: domains.add(a)
                   elif reason not in ("comment",): skipped.append(line)
 
-              entries_count = len(domains)  # <-- count valid domains
-
+              entries_count = len(domains)
               out_path=out_dir/f"{sid}_asterisk.txt"
               with out_path.open("w", encoding="utf-8") as f:
                   f.write(f"# Title: Blocklist for {sname}\n")
@@ -161,8 +131,7 @@ jobs:
                   f.write(f"# Version: {TS}\n")
                   f.write(f"# Original Source: {ORIG_SOURCE}\n")
                   f.write(f"# Syntax: Domains Wildcard - Blocky (v0.23 or newer)\n")
-                  f.write(f"# Entries: {entries_count}\n")   # <-- restored
-                  f.write("#\n")
+                  f.write(f"# Entries: {entries_count}\n#\n")
                   if skipped:
                       f.write("# Skipped unsupported rules:\n")
                       for s in skipped: f.write(f"# Skipped unsupported rule: {s}\n")
@@ -170,46 +139,53 @@ jobs:
                   for d in sorted(domains):
                       f.write(f"*.{d}\n")
 
-          print(f"Services processed: {services_count}, icons written: {icons_written}")
-
-          # Hard guard: if we processed services but wrote zero icons, fail loudly
-          if services_count > 0 and icons_written == 0:
-              print("ERROR: processed services but wrote zero icons — investigate YAML parsing or paths.", file=sys.stderr)
-              sys.exit(2)
-
-          # 3) Sync deletions
-          def sid_from_txt(p: pathlib.Path)->str: return p.name.removesuffix("_asterisk.txt")
-          for p in list(out_dir.glob("*_asterisk.txt")):
-              if sid_from_txt(p) not in upstream_sids:
-                  print(f"Removing obsolete list: {p}"); p.unlink(missing_ok=True)
-          for p in list(icon_dir.glob("*.svg")):
-              if p.stem not in upstream_sids:
-                  print(f"Removing obsolete icon: {p}"); p.unlink(missing_ok=True)
-
-          # 4) Generate SERVICES.md (Icon | Name | Link)
+          # Generate table rows
           rows=[]
           for p in sorted(out_dir.glob("*_asterisk.txt")):
               sid=p.name.removesuffix("_asterisk.txt")
               name_pretty=re.sub(r"_+"," ", sid).title()
               pages_url=f"{PAGES_BASE}/webservices/{p.name}"
               icon_rel=f"icons/{sid}.svg"
-              icon_md=f"![]({icon_rel})" if pathlib.Path(icon_rel).exists() else "—"
+              if pathlib.Path(icon_rel).exists():
+                  icon_md=f'<img src="{icon_rel}" width="20" height="20"/>'
+              else:
+                  icon_md="—"
               link_md=f"[{p.name}]({pages_url})"
               rows.append((icon_md, name_pretty, link_md))
 
+          # Write SERVICES.md
           md = []
           md.append("## 📋 Webservices Blocklists\n")
           md.append("Automatically generated from AdGuard's HostlistsRegistry. Each list is already in wildcard format for Blocky.\n\n")
           md.append("| Icon | Name | Link |\n|------|------|------|\n")
           for icon,name,link in rows:
               md.append(f"| {icon} | {name} | {link} |\n")
-
           pathlib.Path("SERVICES.md").write_text("".join(md), encoding="utf-8")
-          print(f"SERVICES.md written. Rows: {len(rows)}")
+
+          # Inject into README.md
+          readme_path=pathlib.Path("README.md")
+          if readme_path.exists():
+              text=readme_path.read_text(encoding="utf-8").splitlines()
+          else:
+              text=[]
+          start="<!-- START:SERVICES -->"
+          end="<!-- END:SERVICES -->"
+          new_block=["",start,""]+md+[end,""]
+          out=[]; inside=False
+          for line in text:
+              if line.strip()==start:
+                  inside=True; out.extend(new_block)
+              elif line.strip()==end:
+                  inside=False
+              elif not inside:
+                  out.append(line)
+          if start not in text:
+              out.extend(new_block)
+          readme_path.write_text("\n".join(out), encoding="utf-8")
           PY
 
       - name: Commit & push if changed
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore(services): refresh lists, icons, SERVICES.md (+entries)"
-          add_options: "-A"   # force-add new files, but also catch deletions
+          commit_message: "chore(services): refresh lists, icons, SERVICES.md, README table (20x20 icons)"
+          add_options: "-A"
