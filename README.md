@@ -36,6 +36,18 @@ It provides domain blocklists already converted into the **wildcard asterisk (`*
   - `500px_asterisk.txt` → Wildcard blocklist for 500px domains.  
   - …and so on, one for each service in the registry.  
 
+> [!NOTE]  
+> Each generated list may include a section labeled **“Skipped unsupported rules”**.  
+> These lines come directly from the upstream sources but cannot be expressed in Blocky’s wildcard format.  
+> Examples include:
+> - Wildcards inside labels (e.g., `||awsdns-*.tld^`)  
+> - Single-pipe Adblock anchors (e.g., `|domain^`, likely typos for `||domain^`)  
+> - Service discovery / mDNS / SRV records (with underscores or `.local`)  
+> - Rules containing slashes, schemes, or parameters  
+>
+> Skipped rules are shown in the file header for transparency but are **not included** in the active blocklist.  
+> The `# Entries:` count refers only to the valid, usable domains.
+
 ---
 
 ## 🔄 How It Works
