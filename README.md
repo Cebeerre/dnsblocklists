@@ -13,7 +13,7 @@ It provides domain blocklists already converted into the **wildcard asterisk (`*
 ⚠️ **Important:**  
 - The blocklist data itself does **not** originate here.  
 - This repo only automates fetching, converting, and publishing lists from their **original sources**.  
-- All credit remains with the upstream projects.
+- **All credit remains with the upstream projects**.
 
 ---
 
