@@ -28,7 +28,7 @@ jobs:
            --max-time 20 \
            --retry 2 \
            --retry-delay 1 \
-           --retry-all-errors \     
+           --retry-all-errors \
           https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
             -o /usr/local/bin/yq
           chmod +x /usr/local/bin/yq
