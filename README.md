@@ -25,13 +25,13 @@ Contains **Newly Registered Domain (NRD)** lists converted to wildcard format fr
 - **Hagezi NRD**  
   Source: [hagezi/dns-blocklists](https://github.com/hagezi/dns-blocklists)  
   Files:  
-  - [`nrd7_asterisk.txt`](https://raw.githubusercontent.com/Cebeerre/dnsblocklists/refs/heads/main/NRD/nrd7_asterisk.txt) → Domains registered in the **last 7 days**.  
-  - [`nrd14-8_asterisk.txt`](https://raw.githubusercontent.com/Cebeerre/dnsblocklists/refs/heads/main/NRD/nrd14-8_asterisk.txt) → Domains registered **between day 14 and day 8 ago**.
+  - [nrd7_asterisk.txt](https://cebeerre.github.io/dnsblocklists/NRD/nrd7_asterisk.txt) → Domains registered in the **last 7 days**.  
+  - [nrd14-8_asterisk.txt](https://cebeerre.github.io/dnsblocklists/NRD/nrd14-8_asterisk.txt) → Domains registered **between day 14 and day 8 ago**.
 
 - **DNSBunker NRD**  
   Source: [xRuffKez/NRD (DNSBunker)](https://codeberg.org/xRuffKez/NRD)  
   Files:  
-  - [`nrd14_wildcard_dnsbuker.txt`](https://raw.githubusercontent.com/Cebeerre/dnsblocklists/refs/heads/main/NRD/nrd14_wildcard_dnsbuker.txt) → Domains registered in the **last 14 days**.
+  - [nrd14_wildcard_dnsbuker.txt](https://cebeerre.github.io/dnsblocklists/NRD/nrd14_wildcard_dnsbuker.txt) → Domains registered in the **last 14 days**.
 
 ### `webservices/`
 - Contains one file per web service, each in wildcard format.  
