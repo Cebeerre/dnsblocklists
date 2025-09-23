@@ -23,7 +23,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y jq
-          curl -fsSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
+          curl -fsSL \
+           --connect-timeout 5 \
+           --max-time 20 \
+           --retry 2 \
+           --retry-delay 1 \
+           --retry-all-errors \          
+          https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
             -o /usr/local/bin/yq
           chmod +x /usr/local/bin/yq
 
@@ -33,7 +39,13 @@ jobs:
           mkdir -p webservices
 
           TS="$(date -u +%Y%m%d%H%M)"
-          curl -fsSL "$SRC_INDEX" > /tmp/services.json
+          curl -fsSL \
+           --connect-timeout 5 \
+           --max-time 20 \
+           --retry 2 \
+           --retry-delay 1 \
+           --retry-all-errors \          
+          "$SRC_INDEX" > /tmp/services.json
 
           jq -r '.[] | select(.type=="file") | [.name, .download_url] | @tsv' /tmp/services.json \
           | while IFS=$'\t' read -r NAME DL; do
