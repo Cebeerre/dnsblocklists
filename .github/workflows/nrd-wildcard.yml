@@ -73,8 +73,8 @@ jobs:
             echo "Wrote ${out} (lines: $(wc -l < "${out}"))"
           }
 
-          build_file "$SRC7"  "NRD/nrd7_asterisk.txt"    "NRD 7 days (wildcard)"       "Newly Registered Domains (last 7 days)"
-          build_file "$SRC14" "NRD/nrd14-8_asterisk.txt" "NRD 14->8 days (wildcard)"   "Newly Registered Domains (from day 14 to day 8)"
+          build_file "$SRC7"  "NRD/nrd7_asterisk.txt"    "Hagezi's NRD 7 days (wildcard)"       "Newly Registered Domains (last 7 days)(source: hagezi/dns-blocklists)"
+          build_file "$SRC14" "NRD/nrd14-8_asterisk.txt" "Hagezi's NRD 14->8 days (wildcard)"   "Newly Registered Domains (from day 14 to day 8)(source: hagezi/dns-blocklists)"
 
       - name: Commit & push if changed
         uses: stefanzweifel/git-auto-commit-action@v5
