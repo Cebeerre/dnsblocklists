@@ -240,7 +240,12 @@ jobs:
           else:
               print("README up-to-date.")
           PY
-
+          
+      - name: Install git for auto-commit
+        run: |
+          apt-get update
+          apt-get install -y git
+          
       - name: Commit & push if changed
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
