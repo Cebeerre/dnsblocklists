@@ -1,8 +1,8 @@
 # Title: Blocklist for KakaoTalk
-# Description: Blocks KakaoTalk content
+# Description: Blocks KakaoTalk content (sourced from AdGuardTeam's HostlistsRegistry)
 # Homepage: https://github.com/Cebeerre/dnsblocklists
 # License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
-# Version: 202509220346
+# Version: 202509230814
 # Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
 # Syntax: Domains Wildcard - Blocky (v0.23 or newer)
 #
