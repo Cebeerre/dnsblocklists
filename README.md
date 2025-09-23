@@ -30,7 +30,15 @@ Blocklists of **newly registered domains**, which are often abused for malicious
 >[!NOTE]  
 > To block **14 days of Hagezi’s NRDs**, you need to combine `nrd7_asterisk.txt` + `nrd14-8_asterisk.txt`.  
 > I also provide DNSBunker’s 14-day list as an alternative source. Since I don’t know how either project curates or sources their data, using both together might increase coverage but also make lists very large.  
-> Blocky will deduplicate entries automatically, but loading very large lists can increase startup times and **memory (RAM) usage**.
+> Blocky will deduplicate entries automatically, but loading these lists alltogether can increase startup times and **memory (RAM) usage**.
+
+And as per Hagezi's recommendations:
+
+> [!WARNING]
+> These lists are very large and resource-intensive. They may cause high memory usage and contain false positives, since some legitimate domains are newly registered. Use with caution and whitelist critical services as needed.
+             
+> [!CAUTION]
+> Use at your own risk. The NRD lists are provided as-is, without guarantees, support, or a process for removing false positives.
 
 ---
 
