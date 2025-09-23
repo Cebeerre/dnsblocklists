@@ -74,6 +74,5 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore(nrd:dnsbunker): refresh 14-day wildcard list (only if upstream changed)"
-          file_pattern: |
-            NRD/*.txt
-            .checksums/*.sha256
+          add_options: "-A"
+          
