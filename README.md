@@ -36,6 +36,8 @@ Automatically generated from [AdGuardTeam/HostlistsRegistry](https://github.com/
 Each list is already in wildcard format for Blocky.
 
 <!-- START:SERVICES -->
+| Icon | Service | Link |
+|------|---------|------|
 | <img src="icons/4chan.svg" width="20" height="20"/> | 4Chan | [4chan_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/4chan_asterisk.txt) |
 | <img src="icons/500px.svg" width="20" height="20"/> | 500Px | [500px_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/500px_asterisk.txt) |
 | <img src="icons/9gag.svg" width="20" height="20"/> | 9Gag | [9gag_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/9gag_asterisk.txt) |
