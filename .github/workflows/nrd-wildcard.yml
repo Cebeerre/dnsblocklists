@@ -56,8 +56,8 @@ jobs:
             echo "Wrote ${out} (lines: $(wc -l < "${out}"))"
           }
 
-          build_file "$SRC7"  "NRD/nrd7_asterisk.txt"    "NRD 7 days (wildcard)"       "Newly Registered Domains (last 7 days)"
-          build_file "$SRC14" "NRD/nrd14-8_asterisk.txt" "NRD 14->8 days (wildcard)"   "Newly Registered Domains (from day 14 to day 8)"
+          build_file "$SRC7"  "NRD/nrd7_asterisk.txt"    "NRD 7 days (wildcard)"       "Newly Registered Domains (last 7 days) sourced from Hagezi's dns-blocklists"
+          build_file "$SRC14" "NRD/nrd14-8_asterisk.txt" "NRD 14->8 days (wildcard)"   "Newly Registered Domains (from day 14 to day 8) sourced from Hagezi's dns-blocklists"
 
           echo "Preview 7d:"
           head -n 12 NRD/nrd7_asterisk.txt || true
