@@ -121,7 +121,7 @@ jobs:
               OUT="webservices/${SID}_asterisk.txt"
               {
                 echo "# Title: Blocklist for ${SNAME}"
-                echo "# Description: Blocks ${SNAME} content"
+                echo "# Description: Blocks ${SNAME} content (sourced from AdGuardTeam's HostlistsRegistry)"
                 echo "# Homepage: ${HOMEPAGE}"
                 echo "# License: ${LICENSE_URL}"
                 echo "# Version: ${TS}"
