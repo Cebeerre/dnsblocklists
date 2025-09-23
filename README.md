@@ -27,13 +27,24 @@ Blocklists of **newly registered domains**, which are often abused for malicious
 | 🚫 | [hagezi/dns-blocklists](https://github.com/hagezi/dns-blocklists) | NRDs registered **between day 14 and day 8 ago** | [nrd14-8_asterisk.txt](https://cebeerre.github.io/dnsblocklists/NRD/nrd14-8_asterisk.txt) |
 | 🚫 | [xRuffKez/NRD (DNSBunker)](https://codeberg.org/xRuffKez/NRD) | NRDs from the **last 14 days** | [nrd14_wildcard_dnsbuker.txt](https://cebeerre.github.io/dnsblocklists/NRD/nrd14_wildcard_dnsbuker.txt) |
 
+>[!NOTE]  
+> To block **14 days of Hagezi’s NRDs**, you need to combine `nrd7_asterisk.txt` + `nrd14-8_asterisk.txt`.  
+> I also provide DNSBunker’s 14-day list as an alternative source. Since I don’t know how either project curates or sources their data, using both together might increase coverage but also make lists very large.  
+> Blocky will deduplicate entries automatically, but loading very large lists can increase startup times.
+
 ---
 
 ## 🌐 Webservice Blocklists
 
-Blocklists targeting specific **web platforms and services**.  
+Blocklists targeting specific **web platforms and services**. 
 Automatically generated from [AdGuardTeam/HostlistsRegistry](https://github.com/AdguardTeam/HostlistsRegistry).  
 Each list is already in wildcard format for Blocky.
+
+>[!TIP]  
+> These lists can be handy for everyday scenarios:  
+> - **At home** → block services like YouTube for parental control.  
+> - **At the office** → block distractions like YouTube or LinkedIn to keep people focused 😁
+
 
 <!-- START:SERVICES -->
 | Icon | Service | Link |
