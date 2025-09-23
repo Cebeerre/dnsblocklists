@@ -11,13 +11,17 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: python:3.11-slim
     env:
       SRC_INDEX: https://api.github.com/repos/AdguardTeam/HostlistsRegistry/contents/services?ref=main
       ORIG_SOURCE: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
+
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
       - name: Install deps
         run: |
@@ -31,7 +35,6 @@ jobs:
           import requests, yaml, idna
           from requests.adapters import HTTPAdapter, Retry
 
-          # --- Env / paths ---
           REPO = os.environ.get("GITHUB_REPOSITORY", "")
           OWNER, _, NAME = REPO.partition("/")
           PAGES_BASE = f"https://{OWNER}.github.io/{NAME}"
@@ -45,7 +48,6 @@ jobs:
 
           TS = time.strftime("%Y%m%d%H%M", time.gmtime())
 
-          # --- HTTP session (similar to your curl flags) ---
           sess = requests.Session()
           retries = Retry(
               total=2, connect=2, read=2, backoff_factor=1,
@@ -62,10 +64,8 @@ jobs:
               r.raise_for_status()
               return r.content
 
-          # --- Domain validation (RFC-ish + IDNA/UTS-46) ---
           import re as _re
           _label_re = _re.compile(r"^[a-z0-9-]{1,63}$", _re.IGNORECASE)
-
           def _is_valid_label(label: str) -> bool:
               if not label or len(label) > 63: return False
               if label[0] == '-' or label[-1] == '-': return False
@@ -113,14 +113,13 @@ jobs:
               dom_ascii = normalize_domain_ascii(plain)
               return (dom_ascii, None if dom_ascii else "invalid_domain")
 
-          # --- Fetch services index ---
+          # Fetch services index
           try:
               idx_data = json.loads(http_get(SRC_INDEX))
           except Exception as e:
               print(f"ERROR: failed to fetch index {SRC_INDEX}: {e}", file=sys.stderr)
               sys.exit(1)
 
-          # Services present upstream
           upstream_sids: set[str] = set()
 
           for entry in idx_data:
@@ -155,7 +154,8 @@ jobs:
 
               for line in rules:
                   if not isinstance(line, str): continue
-                  dom_ascii, reason = parse_rule_to_domain(line)
+                  dom_ascii, reason = parse_rule_to_domain(line
+                  )
                   if dom_ascii:
                       domains.add(dom_ascii)
                   else:
@@ -179,26 +179,23 @@ jobs:
                       f.write("#\n")
                   for w in sorted_wild: f.write(w + "\n")
 
-          # --- Sync deletions (remove files not in upstream) ---
+          # Sync deletions
           def sid_from_txt(path: pathlib.Path) -> str:
               return path.name.removesuffix("_asterisk.txt")
 
-          existing_txt = list(out_dir.glob("*_asterisk.txt"))
-          for p in existing_txt:
+          for p in list(out_dir.glob("*_asterisk.txt")):
               if sid_from_txt(p) not in upstream_sids:
                   print(f"Removing obsolete list: {p}")
                   try: p.unlink()
                   except FileNotFoundError: pass
 
-          existing_icons = list(icon_dir.glob("*.svg"))
-          for p in existing_icons:
-              sid = p.stem
-              if sid not in upstream_sids:
+          for p in list(icon_dir.glob("*.svg")):
+              if p.stem not in upstream_sids:
                   print(f"Removing obsolete icon: {p}")
                   try: p.unlink()
                   except FileNotFoundError: pass
 
-          # --- Update README table (Icon | Name | Link) ---
+          # Update README table (Icon | Name | Link)
           readme_path = pathlib.Path("README.md")
           if not readme_path.exists():
               print("README.md not found, skipping table update.")
@@ -240,12 +237,7 @@ jobs:
           else:
               print("README up-to-date.")
           PY
-          
-      - name: Install git for auto-commit
-        run: |
-          apt-get update
-          apt-get install -y git
-          
+
       - name: Commit & push if changed
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
