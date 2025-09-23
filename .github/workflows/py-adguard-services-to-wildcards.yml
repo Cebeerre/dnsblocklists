@@ -1,4 +1,4 @@
-name: Build AdGuard services -> wildcard lists (Python) + icons + SERVICES.md + README rows
+name: Build AdGuard services -> wildcard lists (Python) + icons + SERVICES.md + README table
 
 on:
   schedule:
@@ -28,7 +28,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests PyYAML idna
 
-      - name: Build lists, extract icons, write SERVICES.md and update README rows
+      - name: Build lists, extract icons, write SERVICES.md and update README table
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -51,23 +51,24 @@ jobs:
 
           TS = time.strftime("%Y%m%d%H%M", time.gmtime())
 
-          # HTTP session
+          # HTTP session with retries like curl
           sess = requests.Session()
           retries = Retry(total=2, connect=2, read=2, backoff_factor=1,
                           status_forcelist=(429,500,502,503,504),
                           allowed_methods=frozenset(["GET","HEAD"]))
-          sess.mount("http://", HTTPAdapter(max_retries=retries))
-          sess.mount("https://", HTTPAdapter(max_retries=retries))
-          sess.headers.update({"User-Agent": "adguard-webservices-builder/1.9"})
+          adapter = HTTPAdapter(max_retries=retries, pool_connections=8, pool_maxsize=16)
+          sess.mount("http://", adapter); sess.mount("https://", adapter)
+          sess.headers.update({"User-Agent": "adguard-webservices-builder/2.0"})
           if TOKEN:
               sess.headers.update({"Authorization": f"Bearer {TOKEN}"})
 
           def api_get_json(url: str):
               r = sess.get(url, timeout=(5,20)); r.raise_for_status(); return r.json()
           def cdn_get_bytes(url: str) -> bytes:
+              # raw CDN fetch (not REST rate-limited)
               r = requests.get(url, timeout=(5,20)); r.raise_for_status(); return r.content
 
-          # Domain parsing helpers (simplified + IDNA)
+          # --- Helpers: domain parse (simplified + IDNA) ---
           def normalize_domain_ascii(d: str) -> str|None:
               d = d.strip().strip(".").lower()
               if not d or "://" in d or "/" in d or "_" in d or " " in d or "." not in d: return None
@@ -91,28 +92,36 @@ jobs:
               if "*" in plain: return (None,"wildcard_inside_label")
               a=normalize_domain_ascii(plain); return (a, None if a else "invalid")
 
-          # Discover YAML files
+          # 1) Discover service YAMLs via a single recursive tree call
           tree = api_get_json(TREE_API)
           files = [t["path"] for t in tree.get("tree", []) if t.get("type")=="blob"]
           svc_paths = [p for p in files if p.startswith("services/") and (p.endswith(".yml") or p.endswith(".yaml"))]
+          print(f"Service YAML files found: {len(svc_paths)}")
 
           upstream_sids=set(); icons_written=0
 
+          # 2) Process each YAML
           for rel in sorted(svc_paths):
               raw_url=f"https://raw.githubusercontent.com/AdguardTeam/HostlistsRegistry/main/{rel}"
-              yml=yaml.safe_load(cdn_get_bytes(raw_url)) or {}
+              try:
+                  yml=yaml.safe_load(cdn_get_bytes(raw_url)) or {}
+              except Exception as e:
+                  print(f"WARN: YAML parse failed for {rel}: {e}", file=sys.stderr); continue
 
               sid_raw=(yml.get("id") or yml.get("name") or "unknown")
               sname  =(yml.get("name") or yml.get("id") or "unknown")
               sid=re.sub(r"[^a-z0-9]+","_", str(sid_raw).lower()).strip("_") or "unknown"
               upstream_sids.add(sid)
 
+              # icon_svg → icons/<sid>.svg
               icon_svg=yml.get("icon_svg")
               if isinstance(icon_svg,str) and "<svg" in icon_svg.lower():
                   (icon_dir/f"{sid}.svg").write_text(icon_svg.strip(), encoding="utf-8")
                   icons_written+=1
 
+              # rules → domains
               rules=yml.get("rules") or []
+              if not isinstance(rules,list): rules=[]
               domains=set(); skipped=[]
               for line in rules:
                   if not isinstance(line,str): continue
@@ -138,11 +147,21 @@ jobs:
                   for d in sorted(domains):
                       f.write(f"*.{d}\n")
 
-          # Build rows (for both SERVICES.md and README injection)
+          print(f"Icons written: {icons_written}")
+
+          # 3) Sync deletions for lists/icons no longer upstream
+          def sid_from_txt(p: pathlib.Path)->str: return p.name.removesuffix("_asterisk.txt")
+          for p in list(out_dir.glob("*_asterisk.txt")):
+              if sid_from_txt(p) not in upstream_sids:
+                  p.unlink(missing_ok=True)
+          for p in list(icon_dir.glob("*.svg")):
+              if p.stem not in upstream_sids:
+                  p.unlink(missing_ok=True)
+
+          # 4) Build rows for both SERVICES.md and README injection (20x20 icons)
           rows=[]
           for p in sorted(out_dir.glob("*_asterisk.txt")):
               sid=p.name.removesuffix("_asterisk.txt")
-              # Use the id for pretty name fallback
               name_pretty=re.sub(r"_+"," ", sid).title()
               pages_url=f"{PAGES_BASE}/webservices/{p.name}"
               icon_rel=f"icons/{sid}.svg"
@@ -150,7 +169,7 @@ jobs:
               link_md=f"[{p.name}]({pages_url})"
               rows.append((icon_md, name_pretty, link_md))
 
-          # Write SERVICES.md (full doc)
+          # 5) Write SERVICES.md (full doc)
           md = []
           md.append("## 📋 Webservices Blocklists\n")
           md.append("Automatically generated from AdGuard's HostlistsRegistry. Each list is already in wildcard format for Blocky.\n\n")
@@ -159,35 +178,34 @@ jobs:
               md.append(f"| {icon} | {name} | {link} |\n")
           pathlib.Path("SERVICES.md").write_text("".join(md), encoding="utf-8")
 
-          # Inject ONLY ROWS into README between markers
+          # 6) Inject FULL TABLE (header + rows) into README between markers
           readme_path=pathlib.Path("README.md")
-          if readme_path.exists():
-              readme_text=readme_path.read_text(encoding="utf-8")
-          else:
-              print("README.md not found; skipping injection."); sys.exit(0)
+          readme_text=readme_path.read_text(encoding="utf-8")
+
+          table_only = []
+          table_only.append("| Icon | Service | Link |\n")
+          table_only.append("|------|---------|------|\n")
+          for icon,name,link in rows:
+              table_only.append(f"| {icon} | {name} | {link} |\n")
+          table_only = "".join(table_only)
 
           start="<!-- START:SERVICES -->"
           end="<!-- END:SERVICES -->"
-          rows_md = "".join(f"| {icon} | {name} | {link} |\n" for icon,name,link in rows)
-
-          if start in readme_text and end in readme_text:
-              new_text = re.sub(
-                  rf"{re.escape(start)}.*?{re.escape(end)}",
-                  f"{start}\n{rows_md}{end}",
-                  readme_text,
-                  flags=re.DOTALL
-              )
-              if new_text != readme_text:
-                  readme_path.write_text(new_text, encoding="utf-8")
-                  print(f"README rows injected: {len(rows)}")
-              else:
-                  print("README already up-to-date.")
+          new_text = re.sub(
+              rf"{re.escape(start)}.*?{re.escape(end)}",
+              f"{start}\n{table_only}{end}",
+              readme_text,
+              flags=re.DOTALL
+          )
+          if new_text != readme_text:
+              readme_path.write_text(new_text, encoding="utf-8")
+              print(f"README: services table injected ({len(rows)} rows)")
           else:
-              print("Markers not found in README.md; no injection performed.")
+              print("README already up to date")
           PY
 
       - name: Commit & push if changed
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore(services): refresh lists, icons, SERVICES.md, inject README rows (20x20 icons)"
+          commit_message: "chore(services): refresh lists, icons, SERVICES.md, inject README table (20x20 icons)"
           add_options: "-A"
