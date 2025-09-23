@@ -1,0 +1,73 @@
+name: Build DNSBunker NRD wildcard for Blocky
+
+on:
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build NRD wildcard file (DNSBunker 14 days)
+        run: |
+          set -euo pipefail
+          mkdir -p NRD
+
+          SRC14="https://codeberg.org/xRuffKez/NRD/raw/branch/main/lists/14-day/domains-only/nrd-14day"
+
+          # Version stamp (UTC). For Madrid local time, set TZ=Europe/Madrid before date
+          export TS="$(date -u +%Y%m%d%H%M)"
+
+          # Centralize curl flags to avoid line continuation issues
+          CURL="curl -fsSL --connect-timeout 5 --max-time 20 --retry 2 --retry-delay 1 --retry-all-errors"
+
+          build_file () {
+            local src="$1"
+            local out="$2"
+            local title="$3"
+            local desc="$4"
+
+            # 1) Extract domains -> temp file, sorted & unique
+            $CURL "$src" \
+            | awk '/^#/ {next} NF {gsub(/\r/,""); print "*." $0}' \
+            | sort -u > "${out}.domains"
+
+            # Count entries (non-comment lines in the domain list)
+            COUNT=$(grep -vc '^#' "${out}.domains" || true)
+
+            # 2) Write header, then append domains
+            {
+              echo "# Title: ${title}"
+              echo "# Description: ${desc}"
+              echo "# Homepage: https://github.com/${GITHUB_REPOSITORY}"
+              echo "# License: https://github.com/${GITHUB_REPOSITORY}/blob/main/LICENSE"
+              echo "# Version: ${TS}"
+              echo "# Entries: ${COUNT}"
+              echo "# Original Source: https://codeberg.org/xRuffKez/NRD (DNSBunker)"
+              echo "# Syntax: Domains Wildcard - Blocky (v0.23 or newer)"
+              echo "#"
+              cat "${out}.domains"
+            } > "${out}"
+
+            rm -f "${out}.domains"
+            echo "Wrote ${out} (entries: ${COUNT})"
+          }
+
+          build_file "$SRC14" "NRD/nrd14_wildcard_dnsbuker.txt" \
+            "DNSBunker NRD 14 days (wildcard)" \
+            "Newly Registered Domains (last 14 days), sourced from xRuffKez's DNSBunker"
+
+          echo "Preview (first lines):"
+          head -n 14 NRD/nrd14_wildcard_dnsbuker.txt || true
+
+      - name: Commit & push if changed
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(nrd): refresh DNSBunker 14-day wildcard list"
+          file_pattern: "NRD/*.txt"
