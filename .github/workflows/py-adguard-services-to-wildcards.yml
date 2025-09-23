@@ -1,4 +1,4 @@
-name: Build AdGuard services -> wildcard lists (Python) + icons + SERVICES.md + README table
+name: Build AdGuard services -> wildcard lists (Python) + icons + SERVICES.md + README rows
 
 on:
   schedule:
@@ -28,7 +28,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests PyYAML idna
 
-      - name: Build lists, extract icons, write SERVICES.md and update README.md
+      - name: Build lists, extract icons, write SERVICES.md and update README rows
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -58,7 +58,7 @@ jobs:
                           allowed_methods=frozenset(["GET","HEAD"]))
           sess.mount("http://", HTTPAdapter(max_retries=retries))
           sess.mount("https://", HTTPAdapter(max_retries=retries))
-          sess.headers.update({"User-Agent": "adguard-webservices-builder/1.8"})
+          sess.headers.update({"User-Agent": "adguard-webservices-builder/1.9"})
           if TOKEN:
               sess.headers.update({"Authorization": f"Bearer {TOKEN}"})
 
@@ -67,7 +67,7 @@ jobs:
           def cdn_get_bytes(url: str) -> bytes:
               r = requests.get(url, timeout=(5,20)); r.raise_for_status(); return r.content
 
-          # Domain parsing helpers
+          # Domain parsing helpers (simplified + IDNA)
           def normalize_domain_ascii(d: str) -> str|None:
               d = d.strip().strip(".").lower()
               if not d or "://" in d or "/" in d or "_" in d or " " in d or "." not in d: return None
@@ -109,8 +109,7 @@ jobs:
 
               icon_svg=yml.get("icon_svg")
               if isinstance(icon_svg,str) and "<svg" in icon_svg.lower():
-                  icon_path = icon_dir/f"{sid}.svg"
-                  icon_path.write_text(icon_svg.strip(), encoding="utf-8")
+                  (icon_dir/f"{sid}.svg").write_text(icon_svg.strip(), encoding="utf-8")
                   icons_written+=1
 
               rules=yml.get("rules") or []
@@ -139,21 +138,19 @@ jobs:
                   for d in sorted(domains):
                       f.write(f"*.{d}\n")
 
-          # Generate table rows
+          # Build rows (for both SERVICES.md and README injection)
           rows=[]
           for p in sorted(out_dir.glob("*_asterisk.txt")):
               sid=p.name.removesuffix("_asterisk.txt")
+              # Use the id for pretty name fallback
               name_pretty=re.sub(r"_+"," ", sid).title()
               pages_url=f"{PAGES_BASE}/webservices/{p.name}"
               icon_rel=f"icons/{sid}.svg"
-              if pathlib.Path(icon_rel).exists():
-                  icon_md=f'<img src="{icon_rel}" width="20" height="20"/>'
-              else:
-                  icon_md="—"
+              icon_md = f'<img src="{icon_rel}" width="20" height="20"/>' if pathlib.Path(icon_rel).exists() else "—"
               link_md=f"[{p.name}]({pages_url})"
               rows.append((icon_md, name_pretty, link_md))
 
-          # Write SERVICES.md
+          # Write SERVICES.md (full doc)
           md = []
           md.append("## 📋 Webservices Blocklists\n")
           md.append("Automatically generated from AdGuard's HostlistsRegistry. Each list is already in wildcard format for Blocky.\n\n")
@@ -162,30 +159,35 @@ jobs:
               md.append(f"| {icon} | {name} | {link} |\n")
           pathlib.Path("SERVICES.md").write_text("".join(md), encoding="utf-8")
 
-          # Inject into README.md
+          # Inject ONLY ROWS into README between markers
           readme_path=pathlib.Path("README.md")
           if readme_path.exists():
-              text=readme_path.read_text(encoding="utf-8").splitlines()
+              readme_text=readme_path.read_text(encoding="utf-8")
           else:
-              text=[]
+              print("README.md not found; skipping injection."); sys.exit(0)
+
           start="<!-- START:SERVICES -->"
           end="<!-- END:SERVICES -->"
-          new_block=["",start,""]+md+[end,""]
-          out=[]; inside=False
-          for line in text:
-              if line.strip()==start:
-                  inside=True; out.extend(new_block)
-              elif line.strip()==end:
-                  inside=False
-              elif not inside:
-                  out.append(line)
-          if start not in text:
-              out.extend(new_block)
-          readme_path.write_text("\n".join(out), encoding="utf-8")
+          rows_md = "".join(f"| {icon} | {name} | {link} |\n" for icon,name,link in rows)
+
+          if start in readme_text and end in readme_text:
+              new_text = re.sub(
+                  rf"{re.escape(start)}.*?{re.escape(end)}",
+                  f"{start}\n{rows_md}{end}",
+                  readme_text,
+                  flags=re.DOTALL
+              )
+              if new_text != readme_text:
+                  readme_path.write_text(new_text, encoding="utf-8")
+                  print(f"README rows injected: {len(rows)}")
+              else:
+                  print("README already up-to-date.")
+          else:
+              print("Markers not found in README.md; no injection performed.")
           PY
 
       - name: Commit & push if changed
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore(services): refresh lists, icons, SERVICES.md, README table (20x20 icons)"
+          commit_message: "chore(services): refresh lists, icons, SERVICES.md, inject README rows (20x20 icons)"
           add_options: "-A"
