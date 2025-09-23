@@ -2,9 +2,10 @@
 # Description: Blocks HBO Max content (sourced from AdGuardTeam's HostlistsRegistry)
 # Homepage: https://github.com/Cebeerre/dnsblocklists
 # License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
-# Version: 202509231421
+# Version: 202509231434
 # Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
 # Syntax: Domains Wildcard - Blocky (v0.23 or newer)
+# Entries: 13
 #
 *.hbo.com
 *.hbogo.co.th
