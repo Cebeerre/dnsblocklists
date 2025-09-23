@@ -1,7 +1,11 @@
 # Blocky-Compatible Wildcard Lists
 
 This repository exists purely for **convenience**.  
-It provides domain blocklists already converted into the **wildcard asterisk (`*.domain`) format** required by [Blocky](https://github.com/0xERR0R/blocky) (v0.23 or newer).  
+It provides domain blocklists already converted into the **wildcard asterisk (`*.domain`) format** for use with [Blocky](https://github.com/0xERR0R/blocky) (v0.23 or newer).
+
+> **Note:** The wildcard is not strictly required by Blocky itself, but it is necessary if you want subdomains to be blocked as well. Blocky can consume plain domain lists, but in that case it only blocks the exact root domain.  
+> For example, a rule with `example.com` will only block requests to `example.com`, while `*.example.com` will also block `sub.example.com`, `a.b.example.com`, and any other subdomains.
+
 
 ⚠️ **Important:**  
 - The blocklist data itself does **not** originate here.  
