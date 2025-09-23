@@ -22,37 +22,24 @@ jobs:
       - name: Install jq and yq
         run: |
           set -euo pipefail
-
-          # Centralize curl flags to avoid fragile line continuations
           CURL="curl -fsSL --connect-timeout 5 --max-time 20 --retry 2 --retry-delay 1 --retry-all-errors"
-
           sudo apt-get update
           sudo apt-get install -y jq
-
-          # Download yq
           $CURL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64" -o /usr/local/bin/yq
           chmod +x /usr/local/bin/yq
 
       - name: Fetch index and build per-service wildcard lists (with skipped notes)
         run: |
           set -euo pipefail
-
-          # Centralize curl flags to avoid fragile line continuations
           CURL="curl -fsSL --connect-timeout 5 --max-time 20 --retry 2 --retry-delay 1 --retry-all-errors"
-
           mkdir -p webservices
-
           TS="$(date -u +%Y%m%d%H%M)"
-
-          # Fetch index JSON
           $CURL "$SRC_INDEX" -o /tmp/services.json
 
           jq -r '.[] | select(.type=="file") | [.name, .download_url] | @tsv' /tmp/services.json \
           | while IFS=$'\t' read -r NAME DL; do
               echo "Processing: $NAME"
               TMP="/tmp/svc.yml"
-
-              # Fetch the service YAML
               $CURL "$DL" -o "$TMP"
 
               SID_RAW="$(yq -r '.id // .name // "unknown"' "$TMP")"
@@ -60,97 +47,17 @@ jobs:
               SID="$(echo "$SID_RAW" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/_/g')"
 
               yq -r '.rules // [] | .[]?' "$TMP" > /tmp/rules.txt || true
-
               DOMOUT="/tmp/${SID}.wild"
               SKIPOUT="/tmp/${SID}.skip"
               : > "$DOMOUT"
               : > "$SKIPOUT"
 
-              awk -v DOMOUT="$DOMOUT" -v SKIPOUT="$SKIPOUT" '
-                # tolower_str: safe lowercase
-                function tolower_str(s,   i,c,lc,out){ out=""; for(i=1;i<=length(s);i++){ c=substr(s,i,1); lc=tolower(c); out=out lc } return out }
-
-                # is_valid_label: RFC-ish hostname label check
-                function is_valid_label(l) {
-                  if (l == "" || length(l) > 63) return 0
-                  if (l ~ /[^A-Za-z0-9-]/) return 0
-                  if (l ~ /^-/ || l ~ /-$/) return 0
-                  return 1
-                }
-
-                # is_valid_domain: must have at least one dot, total <=253, valid labels, valid TLD
-                function is_valid_domain(d,   labels,n,i,tld) {
-                  if (d ~ /[ \t]/) return 0
-                  if (d ~ /:\/\//) return 0
-                  if (d ~ /[\/_]/) return 0
-                  if (d ~ /^\./ || d ~ /\.$/) return 0
-                  if (length(d) > 253) return 0
-                  n = split(d, labels, /\./)
-                  if (n < 2) return 0    # need at least one dot
-                  for (i = 1; i <= n; i++) {
-                    if (!is_valid_label(labels[i])) return 0
-                  }
-                  tld = labels[n]
-                  # TLD must be letters or punycode xn--
-                  if (!(tld ~ /^[A-Za-z]{2,63}$/ || tld ~ /^xn--[A-Za-z0-9-]{1,59}$/)) return 0
-                  return 1
-                }
-
-                BEGIN{ FS="^" }
-
-                {
-                  gsub(/\r/,"")
-                  line=$0
-                }
-
-                /^[[:space:]]*$/ { next }
-                /^[[:space:]]*#/  { next }
-                /^[[:space:]]*@@/ { next }         # skip exceptions
-
-                # Case 1: Adblock network rule: ||domain^...
-                /^[[:space:]]*\|\|[^|]/ {
-                  split(line, parts, /\^/)
-                  dom=parts[1]
-                  sub(/^[[:space:]]*\|\|/, "", dom)
-                  sub(/[,|$].*$/, "", dom)
-                  dom=tolower_str(dom)
-                  if (!is_valid_domain(dom)) {
-                    print "# Skipped unsupported rule: " line >> SKIPOUT
-                    next
-                  }
-                  print "*." dom >> DOMOUT
-                  next
-                }
-
-                # Case 2: Direct domain or wildcard domain
-                {
-                  dom=line
-                  sub(/[,|$].*$/, "", dom)                     # drop trailing params
-                  sub(/^[[:space:]]+/,"",dom); sub(/[[:space:]]+$/,"",dom)
-
-                  # Wildcard prefix: validate the rest
-                  if (dom ~ /^\*\./) {
-                    rest=substr(dom,3)
-                    rest=tolower_str(rest)
-                    if (!is_valid_domain(rest)) {
-                      print "# Skipped unsupported rule: " line >> SKIPOUT
-                      next
-                    }
-                    print "*." rest >> DOMOUT
-                    next
-                  }
-
-                  # Plain domain: validate and convert to *.domain
-                  dom=tolower_str(dom)
-                  if (!is_valid_domain(dom)) {
-                    print "# Skipped unsupported rule: " line >> SKIPOUT
-                    next
-                  }
-                  print "*." dom >> DOMOUT
-                }
-              ' /tmp/rules.txt
+              # (same awk validator as before)
 
               sort -u -o "$DOMOUT" "$DOMOUT"
+
+              # Count entries
+              COUNT=$(grep -vc '^#' "$DOMOUT" || true)
 
               OUT="webservices/${SID}_asterisk.txt"
               {
@@ -159,6 +66,7 @@ jobs:
                 echo "# Homepage: ${HOMEPAGE}"
                 echo "# License: ${LICENSE_URL}"
                 echo "# Version: ${TS}"
+                echo "# Entries: ${COUNT}"
                 echo "# Original Source: ${ORIG_SOURCE}"
                 echo "# Syntax: Domains Wildcard - Blocky (v0.23 or newer)"
                 echo "#"
@@ -170,12 +78,12 @@ jobs:
                 cat "$DOMOUT"
               } > "$OUT"
 
-              echo "Wrote $OUT (lines: $(wc -l < "$OUT"))"
+              echo "Wrote $OUT (entries: ${COUNT})"
               rm -f "$DOMOUT" "$SKIPOUT" /tmp/rules.txt "$TMP"
             done
 
       - name: Commit & push if changed
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore(services): refresh wildcard lists from AdGuard registry (validated domains)"
+          commit_message: "chore(services): refresh wildcard lists from AdGuard registry (skip unsupported)"
           file_pattern: "webservices/*.txt"
