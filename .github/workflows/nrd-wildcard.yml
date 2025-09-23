@@ -25,6 +25,9 @@ jobs:
           # Version stamp (UTC). For Madrid local time, set TZ=Europe/Madrid before date
           export TS="$(date -u +%Y%m%d%H%M)"
 
+          # Centralize curl flags to avoid line continuation issues
+          CURL="curl -fsSL --connect-timeout 5 --max-time 20 --retry 2 --retry-delay 1 --retry-all-errors"
+
           build_file () {
             local src="$1"
             local out="$2"
@@ -32,14 +35,7 @@ jobs:
             local desc="$4"
 
             # 1) Extract domains -> temp file, sorted & unique
-            
-            curl -fsSL \
-              --connect-timeout 5 \
-              --max-time 20 \
-              --retry 2 \
-              --retry-delay 1 \
-              --retry-all-errors \
-              "$src" \
+            $CURL "$src" \
             | awk '/^#/ {next} NF {gsub(/\r/,""); print "*." $0}' \
             | sort -u > "${out}.domains"
 
