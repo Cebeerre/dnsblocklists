@@ -1,0 +1,251 @@
+name: Build AdGuard services -> wildcard lists (Python) + icons + README table (sync)
+
+on:
+  schedule:
+    - cron: "20 3 * * 1"   # weekly: Mon 03:20 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.11-slim
+    env:
+      SRC_INDEX: https://api.github.com/repos/AdguardTeam/HostlistsRegistry/contents/services?ref=main
+      ORIG_SOURCE: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests PyYAML idna
+
+      - name: Build lists, extract icons, sync deletions, update README table
+        run: |
+          python - <<'PY'
+          import os, re, sys, time, json, pathlib, textwrap
+          import requests, yaml, idna
+          from requests.adapters import HTTPAdapter, Retry
+
+          # --- Env / paths ---
+          REPO = os.environ.get("GITHUB_REPOSITORY", "")
+          OWNER, _, NAME = REPO.partition("/")
+          PAGES_BASE = f"https://{OWNER}.github.io/{NAME}"
+          SRC_INDEX   = os.environ["SRC_INDEX"]
+          ORIG_SOURCE = os.environ["ORIG_SOURCE"]
+
+          out_dir  = pathlib.Path("webservices")
+          icon_dir = pathlib.Path("icons")
+          out_dir.mkdir(parents=True, exist_ok=True)
+          icon_dir.mkdir(parents=True, exist_ok=True)
+
+          TS = time.strftime("%Y%m%d%H%M", time.gmtime())
+
+          # --- HTTP session (similar to your curl flags) ---
+          sess = requests.Session()
+          retries = Retry(
+              total=2, connect=2, read=2, backoff_factor=1,
+              status_forcelist=(429, 500, 502, 503, 504),
+              allowed_methods=frozenset(["GET", "HEAD"])
+          )
+          adapter = HTTPAdapter(max_retries=retries, pool_connections=4, pool_maxsize=8)
+          sess.mount("http://", adapter)
+          sess.mount("https://", adapter)
+          sess.headers.update({"User-Agent": "adguard-webservices-builder/1.1"})
+
+          def http_get(url: str) -> bytes:
+              r = sess.get(url, timeout=(5, 20))
+              r.raise_for_status()
+              return r.content
+
+          # --- Domain validation (RFC-ish + IDNA/UTS-46) ---
+          import re as _re
+          _label_re = _re.compile(r"^[a-z0-9-]{1,63}$", _re.IGNORECASE)
+
+          def _is_valid_label(label: str) -> bool:
+              if not label or len(label) > 63: return False
+              if label[0] == '-' or label[-1] == '-': return False
+              return bool(_label_re.fullmatch(label))
+
+          def normalize_domain_ascii(domain: str) -> str | None:
+              d = domain.strip().strip(".").lower()
+              if not d: return None
+              if "://" in d or "/" in d or "_" in d or " " in d: return None
+              if "." not in d: return None
+              try:
+                  ascii_d = idna.encode(d, uts46=True, std3_rules=True).decode("ascii")
+              except idna.IDNAError:
+                  return None
+              if len(ascii_d) > 253: return None
+              labels = ascii_d.split(".")
+              if len(labels) < 2: return None
+              for lab in labels:
+                  if not _is_valid_label(lab): return None
+              tld = labels[-1]
+              if not (_re.fullmatch(r"[a-z]{2,63}", tld) or _re.fullmatch(r"xn--[a-z0-9-]{1,59}", tld)):
+                  return None
+              return ascii_d
+
+          def parse_rule_to_domain(rule: str) -> tuple[str | None, str | None]:
+              s = rule.strip()
+              if not s or s.startswith("#") or s.startswith("@@"):
+                  return (None, "comment_or_exception")
+              if s.startswith("||"):
+                  m = re.match(r"^\|\|([^,^|$]+)", s)
+                  if not m: return (None, "malformed_double_pipe")
+                  dom = m.group(1).strip().strip(".").lower()
+                  if "*" in dom: return (None, "wildcard_inside_label")
+                  dom_ascii = normalize_domain_ascii(dom)
+                  return (dom_ascii, None if dom_ascii else "invalid_domain")
+              if s.startswith("|"):
+                  return (None, "single_pipe_anchor")
+              if s.startswith("*."):
+                  rest = s[2:].strip().strip(".").lower()
+                  if "*" in rest: return (None, "wildcard_inside_label")
+                  dom_ascii = normalize_domain_ascii(rest)
+                  return (dom_ascii, None if dom_ascii else "invalid_domain")
+              plain = re.split(r"[,|$]", s, maxsplit=1)[0].strip().strip(".").lower()
+              if "*" in plain: return (None, "wildcard_inside_label")
+              dom_ascii = normalize_domain_ascii(plain)
+              return (dom_ascii, None if dom_ascii else "invalid_domain")
+
+          # --- Fetch services index ---
+          try:
+              idx_data = json.loads(http_get(SRC_INDEX))
+          except Exception as e:
+              print(f"ERROR: failed to fetch index {SRC_INDEX}: {e}", file=sys.stderr)
+              sys.exit(1)
+
+          # Services present upstream
+          upstream_sids: set[str] = set()
+
+          for entry in idx_data:
+              if entry.get("type") != "file": continue
+              url  = entry.get("download_url")
+              if not url: continue
+
+              try:
+                  yml = yaml.safe_load(http_get(url)) or {}
+              except Exception as e:
+                  print(f"WARN: YAML parse failed for {entry.get('name')}: {e}", file=sys.stderr)
+                  continue
+
+              sid_raw = (yml.get("id") or yml.get("name") or "unknown")
+              sname   = (yml.get("name") or yml.get("id") or "unknown")
+              sid = re.sub(r"[^a-z0-9]+", "_", str(sid_raw).lower()).strip("_") or "unknown"
+              upstream_sids.add(sid)
+
+              # Save icon if available
+              icon_svg = yml.get("icon_svg")
+              if isinstance(icon_svg, str) and "<svg" in icon_svg.lower():
+                  try:
+                      (icon_dir / f"{sid}.svg").write_text(icon_svg.strip(), encoding="utf-8")
+                  except Exception as e:
+                      print(f"WARN: could not write icon for {sid}: {e}", file=sys.stderr)
+
+              # Build domains
+              rules = yml.get("rules") or []
+              if not isinstance(rules, list): rules = []
+              domains = set()
+              skipped = []
+
+              for line in rules:
+                  if not isinstance(line, str): continue
+                  dom_ascii, reason = parse_rule_to_domain(line)
+                  if dom_ascii:
+                      domains.add(dom_ascii)
+                  else:
+                      if reason not in ("comment_or_exception",):
+                          skipped.append(f"# Skipped unsupported rule: {line}")
+
+              sorted_wild = [f"*.{d}" for d in sorted(domains)]
+              out_path = out_dir / f"{sid}_asterisk.txt"
+              with out_path.open("w", encoding="utf-8") as f:
+                  f.write(f"# Title: Blocklist for {sname}\n")
+                  f.write(f"# Description: Blocks {sname} content (sourced from AdGuardTeam's HostlistsRegistry)\n")
+                  f.write(f"# Homepage: https://github.com/{OWNER}/{NAME}\n")
+                  f.write(f"# License: https://github.com/{OWNER}/{NAME}/blob/main/LICENSE\n")
+                  f.write(f"# Version: {TS}\n")
+                  f.write(f"# Original Source: {ORIG_SOURCE}\n")
+                  f.write(f"# Syntax: Domains Wildcard - Blocky (v0.23 or newer)\n")
+                  f.write("#\n")
+                  if skipped:
+                      f.write("# Skipped unsupported rules:\n")
+                      for s in skipped: f.write(s + "\n")
+                      f.write("#\n")
+                  for w in sorted_wild: f.write(w + "\n")
+
+          # --- Sync deletions (remove files not in upstream) ---
+          def sid_from_txt(path: pathlib.Path) -> str:
+              return path.name.removesuffix("_asterisk.txt")
+
+          existing_txt = list(out_dir.glob("*_asterisk.txt"))
+          for p in existing_txt:
+              if sid_from_txt(p) not in upstream_sids:
+                  print(f"Removing obsolete list: {p}")
+                  try: p.unlink()
+                  except FileNotFoundError: pass
+
+          existing_icons = list(icon_dir.glob("*.svg"))
+          for p in existing_icons:
+              sid = p.stem
+              if sid not in upstream_sids:
+                  print(f"Removing obsolete icon: {p}")
+                  try: p.unlink()
+                  except FileNotFoundError: pass
+
+          # --- Update README table (Icon | Name | Link) ---
+          readme_path = pathlib.Path("README.md")
+          if not readme_path.exists():
+              print("README.md not found, skipping table update.")
+              sys.exit(0)
+
+          rows = []
+          for p in sorted(out_dir.glob("*_asterisk.txt")):
+              sid = p.name.removesuffix("_asterisk.txt")
+              name_pretty = re.sub(r"_+", " ", sid).title()
+              pages_url = f"{PAGES_BASE}/webservices/{p.name}"
+              icon_rel = f"icons/{sid}.svg"
+              icon_md = f"![]({icon_rel})" if pathlib.Path(icon_rel).exists() else "—"
+              link_md = f"[{p.name}]({pages_url})"
+              rows.append((icon_md, name_pretty, link_md))
+
+          header = textwrap.dedent("""\
+          ## 📋 Webservices Blocklists
+
+          Automatically generated from AdGuard's HostlistsRegistry. Each list is already in wildcard format for Blocky.
+
+          | Icon | Name | Link |
+          |------|------|------|
+          """)
+          table_md = header + "".join(f"| {icon} | {name} | {link} |\n" for icon, name, link in rows)
+
+          START = "<!-- BEGIN:SERVICES_TABLE -->"
+          END   = "<!-- END:SERVICES_TABLE -->"
+          readme = readme_path.read_text(encoding="utf-8")
+          if START in readme and END in readme:
+              before = readme.split(START, 1)[0]
+              after  = readme.split(END, 1)[1]
+              new_readme = f"{before}{START}\n<!-- This section is auto-generated. Do not edit by hand. -->\n\n{table_md}\n{END}{after}"
+          else:
+              new_readme = f"{readme.rstrip()}\n\n{START}\n<!-- This section is auto-generated. Do not edit by hand. -->\n\n{table_md}\n{END}\n"
+
+          if new_readme != readme:
+              readme_path.write_text(new_readme, encoding="utf-8")
+              print("README updated.")
+          else:
+              print("README up-to-date.")
+          PY
+
+      - name: Commit & push if changed
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(services): refresh lists, icons, README table (sync with upstream)"
+          file_pattern: |
+            webservices/*.txt
+            icons/*.svg
+            README.md
