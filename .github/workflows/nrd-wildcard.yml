@@ -2,7 +2,7 @@ name: Build Hagezi NRD wildcard for Blocky
 
 on:
   schedule:
-    - cron: "0 7 * * *"   # 07:00 Europe/Madrid during CEST (UTC+2)
+    - cron: "0 7 * * *"
   workflow_dispatch: {}
 
 permissions:
@@ -22,7 +22,7 @@ jobs:
           SRC7="https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/domains/nrd7.txt"
           SRC14="https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/domains/nrd14-8.txt"
 
-          # Version stamp (UTC). For Madrid local time, set TZ=Europe/Madrid before date
+          # Version stamp (UTC)
           export TS="$(date -u +%Y%m%d%H%M)"
 
           # Centralize curl flags
