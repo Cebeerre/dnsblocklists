@@ -35,6 +35,7 @@ jobs:
           import requests, yaml, idna
           from requests.adapters import HTTPAdapter, Retry
 
+          # --- Env / paths ---
           REPO = os.environ.get("GITHUB_REPOSITORY", "")
           OWNER, _, NAME = REPO.partition("/")
           PAGES_BASE = f"https://{OWNER}.github.io/{NAME}"
@@ -48,6 +49,7 @@ jobs:
 
           TS = time.strftime("%Y%m%d%H%M", time.gmtime())
 
+          # --- HTTP session (retries/timeouts like curl flags) ---
           sess = requests.Session()
           retries = Retry(
               total=2, connect=2, read=2, backoff_factor=1,
@@ -57,36 +59,32 @@ jobs:
           adapter = HTTPAdapter(max_retries=retries, pool_connections=4, pool_maxsize=8)
           sess.mount("http://", adapter)
           sess.mount("https://", adapter)
-          sess.headers.update({"User-Agent": "adguard-webservices-builder/1.1"})
+          sess.headers.update({"User-Agent": "adguard-webservices-builder/1.3"})
 
           def http_get(url: str) -> bytes:
               r = sess.get(url, timeout=(5, 20))
               r.raise_for_status()
               return r.content
 
-          import re as _re
-          _label_re = _re.compile(r"^[a-z0-9-]{1,63}$", _re.IGNORECASE)
+          # --- Domain validation (RFC-ish + IDNA/UTS-46) ---
+          _label_re = re.compile(r"^[a-z0-9-]{1,63}$", re.IGNORECASE)
           def _is_valid_label(label: str) -> bool:
-              if not label or len(label) > 63: return False
-              if label[0] == '-' or label[-1] == '-': return False
-              return bool(_label_re.fullmatch(label))
+              return bool(label) and len(label) <= 63 and label[0] != '-' and label[-1] != '-' and _label_re.fullmatch(label)
 
           def normalize_domain_ascii(domain: str) -> str | None:
               d = domain.strip().strip(".").lower()
-              if not d: return None
-              if "://" in d or "/" in d or "_" in d or " " in d: return None
-              if "." not in d: return None
+              if not d or "://" in d or "/" in d or "_" in d or " " in d or "." not in d:
+                  return None
               try:
                   ascii_d = idna.encode(d, uts46=True, std3_rules=True).decode("ascii")
               except idna.IDNAError:
                   return None
               if len(ascii_d) > 253: return None
               labels = ascii_d.split(".")
-              if len(labels) < 2: return None
-              for lab in labels:
-                  if not _is_valid_label(lab): return None
+              if len(labels) < 2 or not all(_is_valid_label(l) for l in labels):
+                  return None
               tld = labels[-1]
-              if not (_re.fullmatch(r"[a-z]{2,63}", tld) or _re.fullmatch(r"xn--[a-z0-9-]{1,59}", tld)):
+              if not (re.fullmatch(r"[a-z]{2,63}", tld) or re.fullmatch(r"xn--[a-z0-9-]{1,59}", tld)):
                   return None
               return ascii_d
 
@@ -113,7 +111,7 @@ jobs:
               dom_ascii = normalize_domain_ascii(plain)
               return (dom_ascii, None if dom_ascii else "invalid_domain")
 
-          # Fetch services index
+          # --- Fetch services index (list of YAML files) ---
           try:
               idx_data = json.loads(http_get(SRC_INDEX))
           except Exception as e:
@@ -121,11 +119,15 @@ jobs:
               sys.exit(1)
 
           upstream_sids: set[str] = set()
+          services_count = 0
+          icons_written = 0
 
           for entry in idx_data:
-              if entry.get("type") != "file": continue
+              if entry.get("type") != "file":
+                  continue
               url  = entry.get("download_url")
-              if not url: continue
+              if not url:
+                  continue
 
               try:
                   yml = yaml.safe_load(http_get(url)) or {}
@@ -137,12 +139,14 @@ jobs:
               sname   = (yml.get("name") or yml.get("id") or "unknown")
               sid = re.sub(r"[^a-z0-9]+", "_", str(sid_raw).lower()).strip("_") or "unknown"
               upstream_sids.add(sid)
+              services_count += 1
 
-              # Save icon if available
+              # Save icon from per-service YAML (as you noted, it's always present)
               icon_svg = yml.get("icon_svg")
               if isinstance(icon_svg, str) and "<svg" in icon_svg.lower():
                   try:
                       (icon_dir / f"{sid}.svg").write_text(icon_svg.strip(), encoding="utf-8")
+                      icons_written += 1
                   except Exception as e:
                       print(f"WARN: could not write icon for {sid}: {e}", file=sys.stderr)
 
@@ -154,8 +158,7 @@ jobs:
 
               for line in rules:
                   if not isinstance(line, str): continue
-                  dom_ascii, reason = parse_rule_to_domain(line
-                  )
+                  dom_ascii, reason = parse_rule_to_domain(line)
                   if dom_ascii:
                       domains.add(dom_ascii)
                   else:
@@ -179,7 +182,9 @@ jobs:
                       f.write("#\n")
                   for w in sorted_wild: f.write(w + "\n")
 
-          # Sync deletions
+          print(f"Services processed: {services_count}, icons written: {icons_written}")
+
+          # --- Sync deletions (lists & icons no longer in upstream) ---
           def sid_from_txt(path: pathlib.Path) -> str:
               return path.name.removesuffix("_asterisk.txt")
 
@@ -195,7 +200,7 @@ jobs:
                   try: p.unlink()
                   except FileNotFoundError: pass
 
-          # Update README table (Icon | Name | Link)
+          # --- Update README table (Icon | Name | Link) ---
           readme_path = pathlib.Path("README.md")
           if not readme_path.exists():
               print("README.md not found, skipping table update.")
@@ -221,21 +226,23 @@ jobs:
           """)
           table_md = header + "".join(f"| {icon} | {name} | {link} |\n" for icon, name, link in rows)
 
-          START = "<!-- BEGIN:SERVICES_TABLE -->"
-          END   = "<!-- END:SERVICES_TABLE -->"
+          # Replace between markers (robust regex, tolerates spaces/newlines/case)
+          START = r"<!--\s*BEGIN:SERVICES_TABLE\s*-->"
+          END   = r"<!--\s*END:SERVICES_TABLE\s*-->"
           readme = readme_path.read_text(encoding="utf-8")
-          if START in readme and END in readme:
-              before = readme.split(START, 1)[0]
-              after  = readme.split(END, 1)[1]
-              new_readme = f"{before}{START}\n<!-- This section is auto-generated. Do not edit by hand. -->\n\n{table_md}\n{END}{after}"
+          pattern = re.compile(f"{START}.*?{END}", re.DOTALL | re.IGNORECASE)
+          new_block = f"<!-- BEGIN:SERVICES_TABLE -->\n<!-- This section is auto-generated. Do not edit by hand. -->\n\n{table_md}\n<!-- END:SERVICES_TABLE -->"
+
+          if re.search(pattern, readme):
+              new_readme = re.sub(pattern, new_block, readme)
           else:
-              new_readme = f"{readme.rstrip()}\n\n{START}\n<!-- This section is auto-generated. Do not edit by hand. -->\n\n{table_md}\n{END}\n"
+              new_readme = f"{readme.rstrip()}\n\n{new_block}\n"
 
           if new_readme != readme:
               readme_path.write_text(new_readme, encoding="utf-8")
-              print("README updated.")
+              print(f"README updated. Rows: {len(rows)}")
           else:
-              print("README up-to-date.")
+              print(f"README up-to-date. Rows: {len(rows)}")
           PY
 
       - name: Commit & push if changed
