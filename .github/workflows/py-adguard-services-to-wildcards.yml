@@ -1,8 +1,8 @@
-name: Build AdGuard services -> wildcard lists
+name: Build AdGuard Webservices -> wildcard lists (Python + YAML checksums)
 
 on:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "20 3 * * 1"   # weekly: Mon 03:20 UTC (adjust if you prefer hourly)
   workflow_dispatch: {}
 
 permissions:
@@ -11,119 +11,215 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Setup Python
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: "3.11"
 
-      - name: Install dependencies
-        run: pip install pyyaml requests
-
-      - name: Build lists, extract icons, write SERVICES.md and update README rows
+      - name: Install deps
         run: |
-          python <<'EOF'
-          import os, re, pathlib, hashlib, requests, yaml
+          python -m pip install --upgrade pip
+          pip install requests PyYAML idna
 
-          BASE = "https://raw.githubusercontent.com/AdguardTeam/HostlistsRegistry/main/services"
-          REPO_BASE = "https://Cebeerre.github.io/dnsblocklists"
-          CHECKSUM_DIR = pathlib.Path(".checksums")
-          CHECKSUM_DIR.mkdir(exist_ok=True)
+      - name: Build lists, icons, SERVICES.md and inject README table (with YAML checksums)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python <<'PY'
+          import os, re, time, hashlib, pathlib, sys
+          import requests, yaml, idna
+          from requests.adapters import HTTPAdapter, Retry
 
-          outdir = pathlib.Path("webservices")
-          outdir.mkdir(exist_ok=True)
-          icons_dir = pathlib.Path("icons")
-          icons_dir.mkdir(exist_ok=True)
+          REPO = os.environ.get("GITHUB_REPOSITORY","")
+          OWNER, _, NAME = REPO.partition("/")
+          PAGES_BASE = f"https://{OWNER}.github.io/{NAME}"
 
-          # fetch index
-          resp = requests.get("https://api.github.com/repos/AdguardTeam/HostlistsRegistry/contents/services")
-          resp.raise_for_status()
-          entries = [e for e in resp.json() if e["name"].endswith(".yaml")]
+          ORIG_SOURCE = "https://github.com/AdguardTeam/HostlistsRegistry/tree/main"
+          TREE_API = "https://api.github.com/repos/AdguardTeam/HostlistsRegistry/git/trees/main?recursive=1"
+          RAW_BASE = "https://raw.githubusercontent.com/AdguardTeam/HostlistsRegistry/main/"
 
-          services = []
-          for entry in entries:
-              service = entry["name"].replace(".yaml", "")
-              url = f"{BASE}/{entry['name']}"
-              r = requests.get(url)
-              r.raise_for_status()
-              raw = r.text
+          out_dir  = pathlib.Path("webservices"); out_dir.mkdir(parents=True, exist_ok=True)
+          icon_dir = pathlib.Path("icons");       icon_dir.mkdir(parents=True, exist_ok=True)
+          cks_dir  = pathlib.Path("checksums");   cks_dir.mkdir(parents=True, exist_ok=True)
 
-              # checksum check
-              sha = hashlib.sha256(raw.encode("utf-8")).hexdigest()
-              checksum_file = CHECKSUM_DIR / f"{service}.sha256"
-              if checksum_file.exists() and checksum_file.read_text() == sha:
-                  print(f"Skipping {service}, no changes.")
+          TS = time.strftime("%Y%m%d%H%M", time.gmtime())
+
+          # HTTP session with short retries (curl-like)
+          sess = requests.Session()
+          retries = Retry(
+              total=2, connect=2, read=2, backoff_factor=1,
+              status_forcelist=(429,500,502,503,504),
+              allowed_methods=frozenset(["GET","HEAD"])
+          )
+          adapter = HTTPAdapter(max_retries=retries, pool_connections=8, pool_maxsize=16)
+          sess.mount("http://", adapter); sess.mount("https://", adapter)
+          sess.headers.update({"User-Agent": "adguard-webservices-builder/py-cks/1.0"})
+          tok = os.environ.get("GITHUB_TOKEN")
+          if tok:
+              sess.headers.update({"Authorization": f"Bearer {tok}"})
+
+          def http_get_json(url:str):
+              r = sess.get(url, timeout=(5,20)); r.raise_for_status(); return r.json()
+          def http_get_bytes(url:str)->bytes:
+              # Use a plain requests.get (separate from sess) for raw CDN if desired; sess is fine here.
+              r = sess.get(url, timeout=(5,20)); r.raise_for_status(); return r.content
+
+          # Domain helpers (kept simple + IDNA)
+          def normalize_domain_ascii(d: str) -> str|None:
+              d = d.strip().strip(".").lower()
+              if not d or "://" in d or "/" in d or "_" in d or " " in d or "." not in d: return None
+              try:
+                  return idna.encode(d, uts46=True, std3_rules=True).decode("ascii")
+              except idna.IDNAError:
+                  return None
+
+          def parse_rule_to_domain(line: str):
+              s = line.strip()
+              if not s or s.startswith("#") or s.startswith("@@"):
+                  return (None, "comment")
+              # Adblock ||domain^
+              if s.startswith("||"):
+                  m = re.match(r"^\|\|([^,^|$]+)", s)
+                  if not m: return (None,"malformed_double_pipe")
+                  dom = m.group(1).strip().strip(".").lower()
+                  if "*" in dom: return (None,"wildcard_inside_label")
+                  a = normalize_domain_ascii(dom); return (a, None if a else "invalid")
+              # Single '|' anchors (likely typos or unsupported)
+              if s.startswith("|"):
+                  return (None,"single_pipe")
+              # *.domain form
+              if s.startswith("*."):
+                  rest = s[2:].strip().strip(".").lower()
+                  if "*" in rest: return (None,"wildcard_inside_label")
+                  a = normalize_domain_ascii(rest); return (a, None if a else "invalid")
+              # Plain domain
+              plain = re.split(r"[,|$]", s, 1)[0].strip().strip(".").lower()
+              if "*" in plain: return (None,"wildcard_inside_label")
+              a = normalize_domain_ascii(plain); return (a, None if a else "invalid")
+
+          # Discover service YAMLs via recursive tree (1 API call)
+          tree = http_get_json(TREE_API)
+          files = [t["path"] for t in tree.get("tree", []) if t.get("type") == "blob"]
+          svc_paths = [p for p in files if p.startswith("services/") and (p.endswith(".yml") or p.endswith(".yaml"))]
+          print(f"Found {len(svc_paths)} service YAML files")
+
+          processed_services = []  # list of tuples (sid, name, pages_url, icon_exists)
+
+          for rel in sorted(svc_paths):
+              raw_url = RAW_BASE + rel
+              ybytes = http_get_bytes(raw_url)
+              yhex   = hashlib.sha256(ybytes).hexdigest()
+
+              # Parse YAML (always) so we can build the table even if unchanged
+              try:
+                  yml = yaml.safe_load(ybytes) or {}
+              except Exception as e:
+                  print(f"WARN: YAML parse failed for {rel}: {e}", file=sys.stderr)
                   continue
-              checksum_file.write_text(sha)
 
-              data = yaml.safe_load(raw)
-              services.append((service, data))
+              sid_raw = (yml.get("id") or yml.get("name") or "unknown")
+              sname   = (yml.get("name") or yml.get("id") or "unknown")
+              sid = re.sub(r"[^a-z0-9]+","_", str(sid_raw).lower()).strip("_") or "unknown"
 
-              # build .txt
-              txtfile = outdir / f"{service}_asterisk.txt"
-              domains = []
-              skipped = []
+              # Checksum compare on the *source YAML*
+              cks_file = cks_dir / f"{sid}.sha256"
+              unchanged = (cks_file.exists() and cks_file.read_text().strip() == yhex)
 
-              for rule in data.get("rules", []):
-                  if rule.startswith("||") and rule.endswith("^"):
-                      d = rule[2:-1]
-                      if "." in d and not any(c in d for c in " /\\:*?\"'<>|"):
-                          domains.append(f"*.{d}")
-                      else:
-                          skipped.append(rule)
-                  else:
-                      skipped.append(rule)
+              # If changed (or first time), rebuild .txt and update icon and checksum
+              if not unchanged:
+                  rules = yml.get("rules") or []
+                  if not isinstance(rules, list): rules = []
+                  domains = set()
+                  skipped = []
+                  for rline in rules:
+                      if not isinstance(rline, str): continue
+                      a, reason = parse_rule_to_domain(rline)
+                      if a:
+                          domains.add(a)
+                      elif reason != "comment":
+                          skipped.append(rline)
 
-              domains = sorted(set(domains))
-
-              with open(txtfile, "w", encoding="utf-8") as f:
-                  f.write("# Syntax: Domains Wildcard - Blocky (v0.23 or newer)\n")
-                  f.write(f"# Title: {data.get('name','')}\n")
-                  f.write("# Description: Converted from AdGuard HostlistsRegistry\n")
-                  f.write("# Homepage: https://github.com/Cebeerre/dnsblocklists\n")
-                  f.write("# License: MIT (same as wrapper repo)\n")
-                  f.write(f"# Original Source: {url}\n")
-                  f.write(f"# Entries: {len(domains)}\n")
-                  f.write("#\n")
-                  if skipped:
-                      f.write("# Skipped unsupported rules:\n")
-                      for r in skipped:
-                          f.write(f"# {r}\n")
+                  out_path = out_dir / f"{sid}_asterisk.txt"
+                  entries_count = len(domains)
+                  with out_path.open("w", encoding="utf-8") as f:
+                      f.write(f"# Title: Blocklist for {sname}\n")
+                      f.write(f"# Description: Blocks {sname} content (sourced from AdGuardTeam's HostlistsRegistry)\n")
+                      f.write(f"# Homepage: https://github.com/{OWNER}/{NAME}\n")
+                      f.write(f"# License: https://github.com/{OWNER}/{NAME}/blob/main/LICENSE\n")
+                      f.write(f"# Version: {TS}\n")
+                      f.write(f"# Original Source: {ORIG_SOURCE}\n")
+                      f.write(f"# Syntax: Domains Wildcard - Blocky (v0.23 or newer)\n")
+                      f.write(f"# Entries: {entries_count}\n")
                       f.write("#\n")
-                  for d in domains:
-                      f.write(d + "\n")
+                      if skipped:
+                          f.write("# Skipped unsupported rules:\n")
+                          for s in skipped:
+                              f.write(f"# Skipped unsupported rule: {s}\n")
+                          f.write("#\n")
+                      for d in sorted(domains):
+                          f.write(f"*.{d}\n")
+                  print(f"Wrote {out_path} ({entries_count} entries)")
 
-              print(f"Wrote {txtfile} ({len(domains)} entries, {len(skipped)} skipped)")
+                  # Icon: write/overwrite if present
+                  icon_svg = yml.get("icon_svg")
+                  if isinstance(icon_svg, str) and "<svg" in icon_svg.lower():
+                      (icon_dir / f"{sid}.svg").write_text(icon_svg.strip(), encoding="utf-8")
 
-              # save icon
-              icon_svg = data.get("icon_svg")
-              if icon_svg:
-                  with open(icons_dir / f"{service}.svg", "w", encoding="utf-8") as f:
-                      f.write(icon_svg)
+                  # Save checksum of upstream YAML
+                  cks_file.write_text(yhex)
 
-          # rebuild SERVICES.md
-          with open("SERVICES.md", "w", encoding="utf-8") as f:
-              f.write("## 🌐 Webservice Blocklists\n\n")
-              f.write("| Icon | Service | Link |\n")
-              f.write("|------|---------|------|\n")
-              for service, data in sorted(services):
-                  icon_path = f"icons/{service}.svg"
-                  icon_md = f'<img src="{icon_path}" width="20" height="20"/>' if os.path.exists(icon_path) else ""
-                  f.write(f"| {icon_md} | {data.get('name', service)} | [{service}_asterisk.txt]({REPO_BASE}/webservices/{service}_asterisk.txt) |\n")
+              # Record for table (always)
+              txtname = f"{sid}_asterisk.txt"
+              pages_url = f"{PAGES_BASE}/webservices/{txtname}"
+              icon_exists = (icon_dir / f"{sid}.svg").exists()
+              processed_services.append((sid, sname, pages_url, icon_exists))
 
-          # inject SERVICES.md into README.md
-          readme = pathlib.Path("README.md").read_text(encoding="utf-8")
-          marker_start, marker_end = "<!-- START:SERVICES -->", "<!-- END:SERVICES -->"
-          table = pathlib.Path("SERVICES.md").read_text(encoding="utf-8")
-          new = re.sub(f"{marker_start}.*?{marker_end}", f"{marker_start}\n{table}\n{marker_end}", readme, flags=re.DOTALL)
-          pathlib.Path("README.md").write_text(new, encoding="utf-8")
-          EOF
+          # Build SERVICES.md (always)
+          md = []
+          md.append("## 📋 Webservices Blocklists\n")
+          md.append("Automatically generated from AdGuard's HostlistsRegistry. Each list is already in wildcard format for Blocky.\n\n")
+          md.append("| Icon | Name | Link |\n|------|------|------|\n")
+          for sid, sname, pages_url, has_icon in sorted(processed_services, key=lambda x: x[1].lower()):
+              icon_md = f'<img src="icons/{sid}.svg" width="20" height="20"/>' if has_icon else "—"
+              md.append(f"| {icon_md} | {sname} | [{sid}_asterisk.txt]({pages_url}) |\n")
+          pathlib.Path("SERVICES.md").write_text("".join(md), encoding="utf-8")
 
-      - name: Commit & push if changed
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore(services): refresh lists, icons, SERVICES.md (+entries, +checksums)"
-          file_pattern: |
-          add_options: "-A"
+          # Inject FULL TABLE into README between markers (always)
+          readme_path = pathlib.Path("README.md")
+          readme_text = readme_path.read_text(encoding="utf-8")
+          # Build the table your README expects: Icon | Service | Link
+          table_only = []
+          table_only.append("| Icon | Service | Link |\n")
+          table_only.append("|------|---------|------|\n")
+          for sid, sname, pages_url, has_icon in sorted(processed_services, key=lambda x: x[1].lower()):
+              icon_md = f'<img src="icons/{sid}.svg" width="20" height="20"/>' if has_icon else "—"
+              table_only.append(f"| {icon_md} | {sname} | [{sid}_asterisk.txt]({pages_url}) |\n")
+          table_md = "".join(table_only)
+
+          start = "<!-- START:SERVICES -->"
+          end   = "<!-- END:SERVICES -->"
+          new_text = re.sub(
+              rf"{re.escape(start)}.*?{re.escape(end)}",
+              f"{start}\n{table_md}{end}",
+              readme_text,
+              flags=re.DOTALL
+          )
+          if new_text != readme_text:
+              readme_path.write_text(new_text, encoding="utf-8")
+              print(f"README: services table injected ({len(processed_services)} rows)")
+          else:
+              print("README already up to date")
+          PY
+
+      - name: Commit & push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore(adguard): refresh services (+YAML checksums, headers, icons, table)" || echo "No changes"
+          git push
