@@ -2,7 +2,7 @@ name: Build Hagezi NRD wildcard for Blocky
 
 on:
   schedule:
-    - cron: "0 7 * * *"
+    - cron: "0 7 * * *"   # 07:00 Europe/Madrid
   workflow_dispatch: {}
 
 permissions:
@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build NRD wildcard files (wildcard-only)
+      - name: Download and process NRD files
         run: |
           set -euo pipefail
           mkdir -p NRD
@@ -25,51 +25,59 @@ jobs:
           # Version stamp (UTC)
           export TS="$(date -u +%Y%m%d%H%M)"
 
-          # Centralize curl flags
-          CURL="curl -fsSL --connect-timeout 5 --max-time 20 --retry 2 --retry-delay 1 --retry-all-errors"
-
           build_file () {
             local src="$1"
             local out="$2"
             local title="$3"
             local desc="$4"
 
-            # 1) Extract domains -> temp file, sorted & unique
-            $CURL "$src" \
-            | awk '/^#/ {next} NF {gsub(/\r/,""); print "*." $0}' \
-            | sort -u > "${out}.domains"
+            TMPFILE="$(mktemp)"
+            curl -fsSL \
+              --connect-timeout 5 \
+              --max-time 20 \
+              --retry 2 \
+              --retry-delay 1 \
+              --retry-all-errors \
+              "$src" -o "$TMPFILE"
 
-            # Count entries
-            COUNT=$(grep -vc '^#' "${out}.domains" || true)
+            # Compute checksum and compare with previous one
+            NEWSUM="$(sha256sum "$TMPFILE" | cut -d' ' -f1)"
+            CHECKFILE=".checksums/$(basename "$out").sha256"
+            mkdir -p .checksums
 
-            # 2) Write header, then append domains
+            if [ -f "$CHECKFILE" ] && grep -q "$NEWSUM" "$CHECKFILE"; then
+              echo "No changes detected for $src → skipping."
+              rm -f "$TMPFILE"
+              return
+            fi
+
+            # Process new version
+            awk '/^#/ {next} NF {gsub(/\r/,""); print "*." $0}' "$TMPFILE" \
+              | sort -u > "${out}.domains"
+
             {
               echo "# Title: ${title}"
               echo "# Description: ${desc}"
               echo "# Homepage: https://github.com/${GITHUB_REPOSITORY}"
               echo "# License: https://github.com/${GITHUB_REPOSITORY}/blob/main/LICENSE"
               echo "# Version: ${TS}"
-              echo "# Entries: ${COUNT}"
               echo "# Original Source: https://github.com/hagezi/dns-blocklists"
               echo "# Syntax: Domains Wildcard - Blocky (v0.23 or newer)"
               echo "#"
               cat "${out}.domains"
             } > "${out}"
 
-            rm -f "${out}.domains"
-            echo "Wrote ${out} (entries: ${COUNT})"
+            echo "$NEWSUM" > "$CHECKFILE"
+
+            rm -f "${out}.domains" "$TMPFILE"
+            echo "Wrote ${out} (lines: $(wc -l < "${out}"))"
           }
 
-          build_file "$SRC7"  "NRD/nrd7_asterisk.txt"    "NRD 7 days (wildcard)"       "Newly Registered Domains (last 7 days) sourced from Hagezi's dns-blocklists"
-          build_file "$SRC14" "NRD/nrd14-8_asterisk.txt" "NRD 14->8 days (wildcard)"   "Newly Registered Domains (from day 14 to day 8) sourced from Hagezi's dns-blocklists"
-
-          echo "Preview 7d:"
-          head -n 14 NRD/nrd7_asterisk.txt || true
-          echo "Preview 14-8d:"
-          head -n 14 NRD/nrd14-8_asterisk.txt || true
+          build_file "$SRC7"  "NRD/nrd7_asterisk.txt"    "NRD 7 days (wildcard)"       "Newly Registered Domains (last 7 days)"
+          build_file "$SRC14" "NRD/nrd14-8_asterisk.txt" "NRD 14->8 days (wildcard)"   "Newly Registered Domains (from day 14 to day 8)"
 
       - name: Commit & push if changed
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore(nrd): refresh wildcard lists (7d, 14-8d)"
-          file_pattern: "NRD/*.txt"
+          commit_message: "chore(nrd): refresh wildcard lists (only if upstream changed)"
+          file_pattern: "NRD/*.txt .checksums/*.sha256"
