@@ -25,7 +25,7 @@ jobs:
           # Version stamp (UTC). For Madrid local time, set TZ=Europe/Madrid before date
           export TS="$(date -u +%Y%m%d%H%M)"
 
-          # Centralize curl flags to avoid line continuation issues
+          # Centralize curl flags
           CURL="curl -fsSL --connect-timeout 5 --max-time 20 --retry 2 --retry-delay 1 --retry-all-errors"
 
           build_file () {
@@ -39,6 +39,9 @@ jobs:
             | awk '/^#/ {next} NF {gsub(/\r/,""); print "*." $0}' \
             | sort -u > "${out}.domains"
 
+            # Count entries
+            COUNT=$(grep -vc '^#' "${out}.domains" || true)
+
             # 2) Write header, then append domains
             {
               echo "# Title: ${title}"
@@ -46,6 +49,7 @@ jobs:
               echo "# Homepage: https://github.com/${GITHUB_REPOSITORY}"
               echo "# License: https://github.com/${GITHUB_REPOSITORY}/blob/main/LICENSE"
               echo "# Version: ${TS}"
+              echo "# Entries: ${COUNT}"
               echo "# Original Source: https://github.com/hagezi/dns-blocklists"
               echo "# Syntax: Domains Wildcard - Blocky (v0.23 or newer)"
               echo "#"
@@ -53,16 +57,16 @@ jobs:
             } > "${out}"
 
             rm -f "${out}.domains"
-            echo "Wrote ${out} (lines: $(wc -l < "${out}"))"
+            echo "Wrote ${out} (entries: ${COUNT})"
           }
 
-          build_file "$SRC7"  "NRD/nrd7_asterisk.txt"    "NRD 7 days (wildcard)"       "Newly Registered Domains (last 7 days) sourced from Hagezi's dns-blocklists"
-          build_file "$SRC14" "NRD/nrd14-8_asterisk.txt" "NRD 14->8 days (wildcard)"   "Newly Registered Domains (from day 14 to day 8) sourced from Hagezi's dns-blocklists"
+          build_file "$SRC7"  "NRD/nrd7_asterisk.txt"    "NRD 7 days (wildcard)"       "Newly Registered Domains (last 7 days)"
+          build_file "$SRC14" "NRD/nrd14-8_asterisk.txt" "NRD 14->8 days (wildcard)"   "Newly Registered Domains (from day 14 to day 8)"
 
           echo "Preview 7d:"
-          head -n 12 NRD/nrd7_asterisk.txt || true
+          head -n 14 NRD/nrd7_asterisk.txt || true
           echo "Preview 14-8d:"
-          head -n 12 NRD/nrd14-8_asterisk.txt || true
+          head -n 14 NRD/nrd14-8_asterisk.txt || true
 
       - name: Commit & push if changed
         uses: stefanzweifel/git-auto-commit-action@v5
