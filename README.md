@@ -188,7 +188,7 @@ Each list is already in wildcard format for Blocky.
 > These lines come directly from the AdGuard upstream sources but cannot be expressed in Blocky’s wildcard format.  
 > Examples include:
 > - Wildcards inside labels (e.g., `||awsdns-*.tld^`)  
-> - Single-pipe Adblock anchors (e.g., `|domain^`, likely typos for `||domain^`)  
+> - Single-pipe Adblock anchors (e.g., `|domain^`)  
 > - Service discovery / mDNS / SRV records (with underscores or `.local`)  
 > - Rules containing slashes, schemes, or parameters  
 >
