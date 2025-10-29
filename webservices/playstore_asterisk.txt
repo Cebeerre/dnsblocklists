@@ -2,7 +2,7 @@
 # Description: Blocks Google Play Store content (sourced from AdGuardTeam's HostlistsRegistry)
 # Homepage: https://github.com/Cebeerre/dnsblocklists
 # License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
-# Version: 202510230102
+# Version: 202510290106
 # Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
 # Syntax: Domains Wildcard - Blocky (v0.23 or newer)
 # Entries: 3
