@@ -19,8 +19,8 @@ jobs:
           set -euo pipefail
           mkdir -p NRD
 
-          SRC7="https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/domains/nrd7.txt"
-          SRC14="https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/domains/nrd14-8.txt"
+          SRC7="https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/domains/nrd7.txt"
+          SRC14="https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/domains/nrd14-8.txt"
 
           # Version stamp (UTC)
           export TS="$(date -u +%Y%m%d%H%M)"
