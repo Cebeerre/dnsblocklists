@@ -1,5 +1,5 @@
-# Title: Blocklist for Temu
-# Description: Blocks Temu content (sourced from AdGuardTeam's HostlistsRegistry)
+# Title: Blocklist for Microsoft Teams
+# Description: Blocks Microsoft Teams content (sourced from AdGuardTeam's HostlistsRegistry)
 # Homepage: https://github.com/Cebeerre/dnsblocklists
 # License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
 # Version: 202601060110
@@ -7,6 +7,6 @@
 # Syntax: Domains Wildcard - Blocky (v0.23 or newer)
 # Entries: 3
 #
-*.kwcdn.com
-*.temu.com
-*.temucdn.com
+*.teams.cdn.office.net
+*.teams.live.com
+*.teams.microsoft.com

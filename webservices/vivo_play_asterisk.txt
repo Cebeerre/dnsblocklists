@@ -1,5 +1,5 @@
-# Title: Blocklist for Temu
-# Description: Blocks Temu content (sourced from AdGuardTeam's HostlistsRegistry)
+# Title: Blocklist for Vivo Play
+# Description: Blocks Vivo Play content (sourced from AdGuardTeam's HostlistsRegistry)
 # Homepage: https://github.com/Cebeerre/dnsblocklists
 # License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
 # Version: 202601060110
@@ -7,6 +7,6 @@
 # Syntax: Domains Wildcard - Blocky (v0.23 or newer)
 # Entries: 3
 #
-*.kwcdn.com
-*.temu.com
-*.temucdn.com
+*.vivoplay.com.br
+*.vivoplay.net
+*.vivotv.com.br

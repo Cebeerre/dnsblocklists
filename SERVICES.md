@@ -68,6 +68,7 @@ Automatically generated from AdGuard's HostlistsRegistry. Each list is already i
 | <img src="icons/mail_ru.svg" width="20" height="20"/> | Mail.ru | [mail_ru_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/mail_ru_asterisk.txt) |
 | <img src="icons/mastodon.svg" width="20" height="20"/> | Mastodon | [mastodon_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/mastodon_asterisk.txt) |
 | <img src="icons/mercado_libre.svg" width="20" height="20"/> | Mercado Libre | [mercado_libre_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/mercado_libre_asterisk.txt) |
+| <img src="icons/microsoft_teams.svg" width="20" height="20"/> | Microsoft Teams | [microsoft_teams_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/microsoft_teams_asterisk.txt) |
 | <img src="icons/minecraft.svg" width="20" height="20"/> | Minecraft | [minecraft_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/minecraft_asterisk.txt) |
 | <img src="icons/nebula.svg" width="20" height="20"/> | Nebula | [nebula_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/nebula_asterisk.txt) |
 | <img src="icons/netflix.svg" width="20" height="20"/> | Netflix | [netflix_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/netflix_asterisk.txt) |
@@ -80,6 +81,7 @@ Automatically generated from AdGuard's HostlistsRegistry. Each list is already i
 | <img src="icons/origin.svg" width="20" height="20"/> | Origin | [origin_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/origin_asterisk.txt) |
 | <img src="icons/paramountplus.svg" width="20" height="20"/> | Paramount Plus | [paramountplus_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/paramountplus_asterisk.txt) |
 | <img src="icons/peacock_tv.svg" width="20" height="20"/> | Peacock TV | [peacock_tv_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/peacock_tv_asterisk.txt) |
+| <img src="icons/perplexity.svg" width="20" height="20"/> | Perplexity | [perplexity_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/perplexity_asterisk.txt) |
 | <img src="icons/pinterest.svg" width="20" height="20"/> | Pinterest | [pinterest_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/pinterest_asterisk.txt) |
 | <img src="icons/playstation.svg" width="20" height="20"/> | PlayStation | [playstation_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/playstation_asterisk.txt) |
 | <img src="icons/plenty_of_fish.svg" width="20" height="20"/> | Plenty of Fish | [plenty_of_fish_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/plenty_of_fish_asterisk.txt) |
@@ -114,6 +116,7 @@ Automatically generated from AdGuard's HostlistsRegistry. Each list is already i
 | <img src="icons/valorant.svg" width="20" height="20"/> | Valorant | [valorant_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/valorant_asterisk.txt) |
 | <img src="icons/viber.svg" width="20" height="20"/> | Viber | [viber_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/viber_asterisk.txt) |
 | <img src="icons/vimeo.svg" width="20" height="20"/> | Vimeo | [vimeo_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/vimeo_asterisk.txt) |
+| <img src="icons/vivo_play.svg" width="20" height="20"/> | Vivo Play | [vivo_play_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/vivo_play_asterisk.txt) |
 | <img src="icons/vk.svg" width="20" height="20"/> | VK.com | [vk_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/vk_asterisk.txt) |
 | <img src="icons/voot.svg" width="20" height="20"/> | Voot | [voot_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/voot_asterisk.txt) |
 | <img src="icons/wargaming.svg" width="20" height="20"/> | Wargaming | [wargaming_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/wargaming_asterisk.txt) |
