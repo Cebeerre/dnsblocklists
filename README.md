@@ -118,6 +118,7 @@ Each list is already in wildcard format for Blocky.
 | <img src="icons/looke.svg" width="20" height="20"/> | Looke | [looke_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/looke_asterisk.txt) |
 | <img src="icons/mail_ru.svg" width="20" height="20"/> | Mail.ru | [mail_ru_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/mail_ru_asterisk.txt) |
 | <img src="icons/mastodon.svg" width="20" height="20"/> | Mastodon | [mastodon_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/mastodon_asterisk.txt) |
+| <img src="icons/max.svg" width="20" height="20"/> | MAX | [max_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/max_asterisk.txt) |
 | <img src="icons/mercado_libre.svg" width="20" height="20"/> | Mercado Libre | [mercado_libre_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/mercado_libre_asterisk.txt) |
 | <img src="icons/microsoft_teams.svg" width="20" height="20"/> | Microsoft Teams | [microsoft_teams_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/microsoft_teams_asterisk.txt) |
 | <img src="icons/minecraft.svg" width="20" height="20"/> | Minecraft | [minecraft_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/minecraft_asterisk.txt) |
