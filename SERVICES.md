@@ -89,6 +89,7 @@ Automatically generated from AdGuard's HostlistsRegistry. Each list is already i
 | <img src="icons/plex.svg" width="20" height="20"/> | Plex | [plex_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/plex_asterisk.txt) |
 | <img src="icons/pluto_tv.svg" width="20" height="20"/> | Pluto TV | [pluto_tv_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/pluto_tv_asterisk.txt) |
 | <img src="icons/privacy.svg" width="20" height="20"/> | Privacy | [privacy_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/privacy_asterisk.txt) |
+| <img src="icons/proton.svg" width="20" height="20"/> | Proton | [proton_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/proton_asterisk.txt) |
 | <img src="icons/qq.svg" width="20" height="20"/> | QQ | [qq_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/qq_asterisk.txt) |
 | <img src="icons/rakuten_viki.svg" width="20" height="20"/> | Rakuten Viki | [rakuten_viki_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/rakuten_viki_asterisk.txt) |
 | <img src="icons/reddit.svg" width="20" height="20"/> | Reddit | [reddit_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/reddit_asterisk.txt) |
@@ -121,6 +122,7 @@ Automatically generated from AdGuard's HostlistsRegistry. Each list is already i
 | <img src="icons/vk.svg" width="20" height="20"/> | VK.com | [vk_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/vk_asterisk.txt) |
 | <img src="icons/voot.svg" width="20" height="20"/> | Voot | [voot_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/voot_asterisk.txt) |
 | <img src="icons/wargaming.svg" width="20" height="20"/> | Wargaming | [wargaming_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/wargaming_asterisk.txt) |
+| <img src="icons/warnerbrosgames.svg" width="20" height="20"/> | Warner Bros. Games | [warnerbrosgames_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/warnerbrosgames_asterisk.txt) |
 | <img src="icons/wechat.svg" width="20" height="20"/> | WeChat | [wechat_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/wechat_asterisk.txt) |
 | <img src="icons/weibo.svg" width="20" height="20"/> | Weibo | [weibo_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/weibo_asterisk.txt) |
 | <img src="icons/whatsapp.svg" width="20" height="20"/> | WhatsApp | [whatsapp_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/whatsapp_asterisk.txt) |
