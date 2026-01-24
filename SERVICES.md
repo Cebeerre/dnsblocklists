@@ -46,9 +46,11 @@ Automatically generated from AdGuard's HostlistsRegistry. Each list is already i
 | <img src="icons/facebook.svg" width="20" height="20"/> | Facebook | [facebook_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/facebook_asterisk.txt) |
 | <img src="icons/fifa.svg" width="20" height="20"/> | FIFA | [fifa_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/fifa_asterisk.txt) |
 | <img src="icons/flickr.svg" width="20" height="20"/> | Flickr | [flickr_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/flickr_asterisk.txt) |
+| <img src="icons/gemini.svg" width="20" height="20"/> | Gemini | [gemini_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/gemini_asterisk.txt) |
 | <img src="icons/globoplay.svg" width="20" height="20"/> | Globoplay | [globoplay_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/globoplay_asterisk.txt) |
 | <img src="icons/gog.svg" width="20" height="20"/> | GOG | [gog_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/gog_asterisk.txt) |
 | <img src="icons/playstore.svg" width="20" height="20"/> | Google Play Store | [playstore_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/playstore_asterisk.txt) |
+| <img src="icons/grok.svg" width="20" height="20"/> | Grok | [grok_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/grok_asterisk.txt) |
 | <img src="icons/hbomax.svg" width="20" height="20"/> | HBO Max | [hbomax_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/hbomax_asterisk.txt) |
 | <img src="icons/hulu.svg" width="20" height="20"/> | Hulu | [hulu_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/hulu_asterisk.txt) |
 | <img src="icons/icloud_private_relay.svg" width="20" height="20"/> | iCloud Private Relay | [icloud_private_relay_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/icloud_private_relay_asterisk.txt) |
@@ -66,9 +68,11 @@ Automatically generated from AdGuard's HostlistsRegistry. Each list is already i
 | <img src="icons/lionsgateplus.svg" width="20" height="20"/> | Lionsgate+ | [lionsgateplus_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/lionsgateplus_asterisk.txt) |
 | <img src="icons/looke.svg" width="20" height="20"/> | Looke | [looke_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/looke_asterisk.txt) |
 | <img src="icons/mail_ru.svg" width="20" height="20"/> | Mail.ru | [mail_ru_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/mail_ru_asterisk.txt) |
+| <img src="icons/manus.svg" width="20" height="20"/> | Manus | [manus_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/manus_asterisk.txt) |
 | <img src="icons/mastodon.svg" width="20" height="20"/> | Mastodon | [mastodon_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/mastodon_asterisk.txt) |
 | <img src="icons/max.svg" width="20" height="20"/> | MAX | [max_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/max_asterisk.txt) |
 | <img src="icons/mercado_libre.svg" width="20" height="20"/> | Mercado Libre | [mercado_libre_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/mercado_libre_asterisk.txt) |
+| <img src="icons/meta_ai.svg" width="20" height="20"/> | Meta AI | [meta_ai_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/meta_ai_asterisk.txt) |
 | <img src="icons/microsoft_teams.svg" width="20" height="20"/> | Microsoft Teams | [microsoft_teams_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/microsoft_teams_asterisk.txt) |
 | <img src="icons/minecraft.svg" width="20" height="20"/> | Minecraft | [minecraft_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/minecraft_asterisk.txt) |
 | <img src="icons/nebula.svg" width="20" height="20"/> | Nebula | [nebula_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/nebula_asterisk.txt) |
