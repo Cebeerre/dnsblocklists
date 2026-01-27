@@ -29,6 +29,7 @@ Automatically generated from AdGuard's HostlistsRegistry. Each list is already i
 | <img src="icons/cloudflare.svg" width="20" height="20"/> | Cloudflare | [cloudflare_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/cloudflare_asterisk.txt) |
 | <img src="icons/clubhouse.svg" width="20" height="20"/> | Clubhouse | [clubhouse_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/clubhouse_asterisk.txt) |
 | <img src="icons/coolapk.svg" width="20" height="20"/> | CoolApk | [coolapk_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/coolapk_asterisk.txt) |
+| <img src="icons/copilot.svg" width="20" height="20"/> | Copilot | [copilot_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/copilot_asterisk.txt) |
 | <img src="icons/crunchyroll.svg" width="20" height="20"/> | Crunchyroll | [crunchyroll_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/crunchyroll_asterisk.txt) |
 | <img src="icons/dailymotion.svg" width="20" height="20"/> | Dailymotion | [dailymotion_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/dailymotion_asterisk.txt) |
 | <img src="icons/deepseek.svg" width="20" height="20"/> | DeepSeek | [deepseek_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/deepseek_asterisk.txt) |
