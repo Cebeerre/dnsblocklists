@@ -58,6 +58,7 @@ Automatically generated from AdGuard's HostlistsRegistry. Each list is already i
 | <img src="icons/iheartradio.svg" width="20" height="20"/> | iHeartRadio | [iheartradio_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/iheartradio_asterisk.txt) |
 | <img src="icons/imgur.svg" width="20" height="20"/> | Imgur | [imgur_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/imgur_asterisk.txt) |
 | <img src="icons/instagram.svg" width="20" height="20"/> | Instagram | [instagram_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/instagram_asterisk.txt) |
+| <img src="icons/io_interactive.svg" width="20" height="20"/> | IO Interactive | [io_interactive_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/io_interactive_asterisk.txt) |
 | <img src="icons/iqiyi.svg" width="20" height="20"/> | iQIYI | [iqiyi_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/iqiyi_asterisk.txt) |
 | <img src="icons/kakaotalk.svg" width="20" height="20"/> | KakaoTalk | [kakaotalk_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/kakaotalk_asterisk.txt) |
 | <img src="icons/kik.svg" width="20" height="20"/> | Kik | [kik_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/kik_asterisk.txt) |
