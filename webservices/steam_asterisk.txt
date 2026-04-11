@@ -2,20 +2,10 @@
 # Description: Blocks Steam content (sourced from AdGuardTeam's HostlistsRegistry)
 # Homepage: https://github.com/Cebeerre/dnsblocklists
 # License: https://github.com/Cebeerre/dnsblocklists/blob/main/LICENSE
-# Version: 202509231923
+# Version: 202604110145
 # Original Source: https://github.com/AdguardTeam/HostlistsRegistry/tree/main
 # Syntax: Domains Wildcard - Blocky (v0.23 or newer)
-# Entries: 26
-#
-# Skipped unsupported rules:
-# Skipped unsupported rule: |steambroadcast.akamaized.net^
-# Skipped unsupported rule: |steamcdn-a.akamaihd.net^
-# Skipped unsupported rule: |steamcommunity-a.akamaihd.net^
-# Skipped unsupported rule: |steamstore-a.akamaihd.net^
-# Skipped unsupported rule: |steamusercontent-a.akamaihd.net^
-# Skipped unsupported rule: |steamuserimages-a.akamaihd.net^
-# Skipped unsupported rule: |steamvideo-a.akamaihd.net^
-# Skipped unsupported rule: |xz.pphimalayanrt.com^
+# Entries: 35
 #
 *.csgo.wmsj.cn
 *.dl.steam.clngaa.com
@@ -28,18 +18,27 @@
 *.st.dl.pinyuncloud.com
 *.steam-api.com
 *.steam-chat.com
+*.steambroadcast.akamaized.net
+*.steamcdn-a.akamaihd.net
 *.steamchina.com
+*.steamcommunity-a.akamaihd.net
 *.steamcommunity.com
 *.steamcontent.com
 *.steamdeck.com
 *.steamgames.com
+*.steampipe.akamaized.net
 *.steampipe.steamcontent.tnkjmec.com
 *.steampowered.com
 *.steampowered.com.8686c.com
 *.steamserver.net
 *.steamstatic.com
 *.steamstatic.com.8686c.com
+*.steamstore-a.akamaihd.net
+*.steamusercontent-a.akamaihd.net
 *.steamusercontent.com
+*.steamuserimages-a.akamaihd.net
+*.steamvideo-a.akamaihd.net
 *.underlords.com
 *.valvesoftware.com
 *.wmsjsteam.com
+*.xz.pphimalayanrt.com
