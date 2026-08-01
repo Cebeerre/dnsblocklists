@@ -102,6 +102,7 @@ Each list is already in wildcard format for Blocky.
 | <img src="icons/globoplay.svg" width="20" height="20"/> | Globoplay | [globoplay_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/globoplay_asterisk.txt) |
 | <img src="icons/gog.svg" width="20" height="20"/> | GOG | [gog_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/gog_asterisk.txt) |
 | <img src="icons/playstore.svg" width="20" height="20"/> | Google Play Store | [playstore_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/playstore_asterisk.txt) |
+| <img src="icons/grindr.svg" width="20" height="20"/> | Grindr | [grindr_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/grindr_asterisk.txt) |
 | <img src="icons/grok.svg" width="20" height="20"/> | Grok | [grok_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/grok_asterisk.txt) |
 | <img src="icons/hbomax.svg" width="20" height="20"/> | HBO Max | [hbomax_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/hbomax_asterisk.txt) |
 | <img src="icons/hulu.svg" width="20" height="20"/> | Hulu | [hulu_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/hulu_asterisk.txt) |
