@@ -45,11 +45,12 @@ Automatically generated from AdGuard's HostlistsRegistry. Each list is already i
 | <img src="icons/epic_games.svg" width="20" height="20"/> | Epic Games | [epic_games_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/epic_games_asterisk.txt) |
 | <img src="icons/espn.svg" width="20" height="20"/> | ESPN | [espn_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/espn_asterisk.txt) |
 | <img src="icons/facebook.svg" width="20" height="20"/> | Facebook | [facebook_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/facebook_asterisk.txt) |
+| <img src="icons/fdj_united.svg" width="20" height="20"/> | FDJ United | [fdj_united_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/fdj_united_asterisk.txt) |
 | <img src="icons/fifa.svg" width="20" height="20"/> | FIFA | [fifa_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/fifa_asterisk.txt) |
 | <img src="icons/flickr.svg" width="20" height="20"/> | Flickr | [flickr_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/flickr_asterisk.txt) |
-| <img src="icons/gemini.svg" width="20" height="20"/> | Gemini | [gemini_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/gemini_asterisk.txt) |
 | <img src="icons/globoplay.svg" width="20" height="20"/> | Globoplay | [globoplay_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/globoplay_asterisk.txt) |
 | <img src="icons/gog.svg" width="20" height="20"/> | GOG | [gog_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/gog_asterisk.txt) |
+| <img src="icons/gemini.svg" width="20" height="20"/> | Google Gemini | [gemini_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/gemini_asterisk.txt) |
 | <img src="icons/playstore.svg" width="20" height="20"/> | Google Play Store | [playstore_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/playstore_asterisk.txt) |
 | <img src="icons/grindr.svg" width="20" height="20"/> | Grindr | [grindr_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/grindr_asterisk.txt) |
 | <img src="icons/grok.svg" width="20" height="20"/> | Grok | [grok_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/grok_asterisk.txt) |
@@ -105,6 +106,7 @@ Automatically generated from AdGuard's HostlistsRegistry. Each list is already i
 | <img src="icons/rockstar_games.svg" width="20" height="20"/> | Rockstar Games | [rockstar_games_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/rockstar_games_asterisk.txt) |
 | <img src="icons/samsung_tv_plus.svg" width="20" height="20"/> | Samsung TV Plus | [samsung_tv_plus_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/samsung_tv_plus_asterisk.txt) |
 | <img src="icons/shein.svg" width="20" height="20"/> | Shein | [shein_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/shein_asterisk.txt) |
+| <img src="icons/shell_shockers.svg" width="20" height="20"/> | Shell Shockers | [shell_shockers_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/shell_shockers_asterisk.txt) |
 | <img src="icons/shopee.svg" width="20" height="20"/> | Shopee | [shopee_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/shopee_asterisk.txt) |
 | <img src="icons/signal.svg" width="20" height="20"/> | Signal | [signal_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/signal_asterisk.txt) |
 | <img src="icons/skype.svg" width="20" height="20"/> | Skype | [skype_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/skype_asterisk.txt) |
