@@ -38,6 +38,7 @@ Automatically generated from AdGuard's HostlistsRegistry. Each list is already i
 | <img src="icons/discord.svg" width="20" height="20"/> | Discord | [discord_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/discord_asterisk.txt) |
 | <img src="icons/discoveryplus.svg" width="20" height="20"/> | Discovery+ | [discoveryplus_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/discoveryplus_asterisk.txt) |
 | <img src="icons/disneyplus.svg" width="20" height="20"/> | Disney+ | [disneyplus_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/disneyplus_asterisk.txt) |
+| <img src="icons/dola.svg" width="20" height="20"/> | Dola | [dola_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/dola_asterisk.txt) |
 | <img src="icons/douban.svg" width="20" height="20"/> | Douban | [douban_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/douban_asterisk.txt) |
 | <img src="icons/dropbox.svg" width="20" height="20"/> | Dropbox | [dropbox_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/dropbox_asterisk.txt) |
 | <img src="icons/ebay.svg" width="20" height="20"/> | eBay | [ebay_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/ebay_asterisk.txt) |
@@ -99,6 +100,8 @@ Automatically generated from AdGuard's HostlistsRegistry. Each list is already i
 | <img src="icons/privacy.svg" width="20" height="20"/> | Privacy | [privacy_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/privacy_asterisk.txt) |
 | <img src="icons/proton.svg" width="20" height="20"/> | Proton | [proton_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/proton_asterisk.txt) |
 | <img src="icons/qq.svg" width="20" height="20"/> | QQ | [qq_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/qq_asterisk.txt) |
+| <img src="icons/questionai.svg" width="20" height="20"/> | QuestionAI | [questionai_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/questionai_asterisk.txt) |
+| <img src="icons/qwen.svg" width="20" height="20"/> | Qwen | [qwen_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/qwen_asterisk.txt) |
 | <img src="icons/rakuten_viki.svg" width="20" height="20"/> | Rakuten Viki | [rakuten_viki_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/rakuten_viki_asterisk.txt) |
 | <img src="icons/reddit.svg" width="20" height="20"/> | Reddit | [reddit_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/reddit_asterisk.txt) |
 | <img src="icons/riot_games.svg" width="20" height="20"/> | Riot Games | [riot_games_asterisk.txt](https://Cebeerre.github.io/dnsblocklists/webservices/riot_games_asterisk.txt) |
